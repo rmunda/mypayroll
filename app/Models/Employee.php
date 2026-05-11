@@ -1,0 +1,55 @@
+<?php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Employee extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = [
+        'employee_code','name','email','phone',
+        'department_id','pay_structure_id','designation',
+        'basic_salary','pay_frequency','bank_name','bank_account',
+        'ifsc_code','pan_number','uan_number','esic_number',
+        'date_of_joining','date_of_leaving','status','tax_regime','user_id',
+    ];
+
+    protected $casts = [
+        'date_of_joining' => 'date',
+        'date_of_leaving' => 'date',
+        'basic_salary'    => 'decimal:2',
+    ];
+
+    public function department()   { return $this->belongsTo(Department::class); }
+    public function payStructure() { return $this->belongsTo(PayStructure::class); }
+    public function paySlips()     { return $this->hasMany(PaySlip::class); }
+    public function attendance()   { return $this->hasMany(Attendance::class); }
+    public function leaves()       { return $this->hasMany(Leave::class); }
+    public function user()         { return $this->belongsTo(User::class); }
+
+    // Computed HRA
+    public function getHraAttribute(): float
+    {
+        return $this->basic_salary * ($this->payStructure->hra_percentage / 100);
+    }
+
+    // Computed gross
+    public function getGrossSalaryAttribute(): float
+    {
+        return $this->basic_salary + $this->hra + $this->payStructure->ta_fixed;
+    }
+
+    // Auto-generate employee code EMP-001
+    protected static function booted(): void
+    {
+        static::creating(function (Employee $e) {
+            if (empty($e->employee_code)) {
+                $last = static::withTrashed()->latest('id')->first();
+                $next = $last ? (intval(substr($last->employee_code, 4)) + 1) : 1;
+                $e->employee_code = 'EMP-' . str_pad($next, 3, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+}

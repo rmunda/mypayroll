@@ -19,6 +19,9 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+use Filament\Navigation\NavigationGroup;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -31,6 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->brandName('MyPayroll') // <--- Add this line
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -38,8 +42,20 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                //AccountWidget::class,
+                //FilamentInfoWidget::class,
+            ])
+            // ADD: groups the sidebar into sections
+            ->navigationGroups([
+                NavigationGroup::make('People'),
+                NavigationGroup::make('Payroll'),
+                NavigationGroup::make('Compliance'),
+                NavigationGroup::make('Reports & Settings'),
+            ])
+            // ADD: register third-party plugins (install packages first)
+            ->plugins([
+                FilamentShieldPlugin::make(),
+                //FilamentFullCalendarPlugin::make()->selectable()->editable(),
             ])
             ->middleware([
                 EncryptCookies::class,
