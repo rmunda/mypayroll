@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('payroll_runs', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('financial_year_id')
+                ->constrained()
+                ->cascadeOnDelete();
             $table->string('period_label');
             $table->date('period_start');
             $table->date('period_end');

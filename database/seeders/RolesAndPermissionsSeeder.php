@@ -72,6 +72,16 @@ class RolesAndPermissionsSeeder extends Seeder
             'Create:Department',
             'Update:Department',
 
+            // FinancialYear
+            'ViewAny:FinancialYear','View:FinancialYear',
+            'Create:FinancialYear', 'Update:FinancialYear',
+            'Delete:FinancialYear',
+
+            // Holiday
+            'ViewAny:Holiday',     'View:Holiday',
+            'Create:Holiday',      'Update:Holiday',
+            'Delete:Holiday',      'DeleteAny:Holiday',
+
             // Report permissions
             'View:Reports',
             'Export:Reports',
@@ -107,6 +117,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'ViewAny:Leave', 'View:Leave', 'Update:Leave', 'Approve:Leave',
             'ViewAny:DeductionRule', 'View:DeductionRule',
             'ViewAny:Department', 'View:Department',
+            // financial year (read only)
+            'ViewAny:FinancialYear','View:FinancialYear',
+
+            // holidays (read only)
+            'ViewAny:Holiday',     'View:Holiday',
             'View:Reports', 'Export:Reports',
         ]);
 
@@ -118,6 +133,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'ViewAny:Leave', 'View:Leave', 'Approve:Leave',
             'View:PaySlip', 'Download:PaySlip',
             'View:Reports',
+            'ViewAny:Holiday',     'View:Holiday',
         ]);
 
         // EMPLOYEE — self service only
@@ -128,6 +144,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'View:Attendance',
             'View:Leave',
             'Create:Leave',
+            'View:Holiday',
         ]);
     }
 }

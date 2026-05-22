@@ -22,4 +22,10 @@ class PayrollRun extends Model
     public function isDraft():    bool { return $this->status === 'draft'; }
     public function isApproved(): bool { return $this->status === 'approved'; }
     public function isPaid():     bool { return $this->status === 'paid'; }
+
+    // Relation
+    public function financialYear()
+    {
+        return $this->belongsTo(FinancialYear::class);
+    }
 }
