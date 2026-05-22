@@ -6,6 +6,8 @@ use App\Filament\Resources\Attendances\AttendanceResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
+use Filament\Actions\Action;
+
 class ListAttendances extends ListRecords
 {
     protected static string $resource = AttendanceResource::class;
@@ -14,6 +16,12 @@ class ListAttendances extends ListRecords
     {
         return [
             CreateAction::make(),
+
+            // Add your new Calendar View button right next to it
+            Action::make('back')
+                ->label('Calendar View')
+                ->icon('heroicon-o-calendar-days')                
+                ->url(fn (): string => static::getResource()::getUrl('index')), // Points to root '/' which is now the calendar
         ];
     }
 }

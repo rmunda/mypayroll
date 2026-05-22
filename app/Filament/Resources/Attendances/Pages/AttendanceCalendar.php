@@ -23,7 +23,7 @@ class AttendanceCalendar extends Page
                 ->label('Back to List')
                 ->icon('heroicon-o-list-bullet') // Clean direct string icon
                 ->color('gray')                  // Gray keeps it distinct from the create button
-                ->url(fn (): string => static::getResource()::getUrl('index')),
+                ->url(fn (): string => static::getResource()::getUrl('list')),
         ];
     }
 

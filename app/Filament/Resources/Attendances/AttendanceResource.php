@@ -107,12 +107,12 @@ class AttendanceResource extends Resource
                     ),
             ])
 
-            ->headerActions([
-                Action::make('calendar')
-                    ->label('Calendar View')
-                    ->icon('heroicon-o-calendar-days')
-                    ->url(fn (): string => static::getUrl('calendar')),
-            ])
+            // ->headerActions([
+            //     Action::make('calendar')
+            //         ->label('Calendar View')
+            //         ->icon('heroicon-o-calendar-days')
+            //         ->url(fn (): string => static::getUrl('index')),
+            // ])
             
             ->bulkActions([
                 BulkAction::make('mark_present')
@@ -141,9 +141,9 @@ class AttendanceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'    => ListAttendances::route('/'),
+            'index'    => AttendanceCalendar::route('/'),
             'create'   => CreateAttendance::route('/create'),
-            'calendar' => AttendanceCalendar::route('/calendar'),
+            'list'     => ListAttendances::route('/list'),
         ];
     }
 }
