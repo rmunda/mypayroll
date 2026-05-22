@@ -9,68 +9,30 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\TextInput;
 
 use Filament\Schemas\Schema;
 
-use Filament\Actions\CreateAction;
-
 use Illuminate\Database\Eloquent\Model;
-use Saade\FilamentFullCalendar\Data\EventData;
 
+
+use Saade\FilamentFullCalendar\Actions\CreateAction;
+use Saade\FilamentFullCalendar\Actions\EditAction;
+use Saade\FilamentFullCalendar\Actions\DeleteAction;
+
+use Filament\Schemas\Components\Grid;
+
+use Saade\FilamentFullCalendar\Data\EventData;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class AttendanceCalendarWidget extends FullCalendarWidget
 {
-    // Force the calendar widget to utilize the full page width
     protected int | string | array $columnSpan = 'full';
 
-    // Optional: Make it show up at the very top if you have other dashboard widgets
     protected static ?int $sort = 1;
-
-    public ?string $filterEmployee = null;
 
     public Model | string | null $model = Attendance::class;
 
-    // REMOVE your old public function form() method completely!
-    // ADD THIS DYNAMIC ACTION BLOCK INSTEAD
-    protected function getCreateAction(): CreateAction
-    {
-        return CreateAction::make()
-            ->model(Attendance::class)
-            ->mountUsing(function (Schema $schema, array $arguments) {
-                // This pre-fills the DatePicker with the date you actually clicked on!
-                return $schema->state([
-                    'date' => $arguments['date'] ?? today(),
-                ]);
-            })
-            ->schema([
-                Select::make('employee_id')
-                    ->label('Employee')
-                    ->options(Employee::where('status', 'active')->pluck('name', 'id'))
-                    ->searchable()
-                    ->required(),
-                    
-                DatePicker::make('date')
-                    ->required(),
-                    
-                Select::make('status')
-                    ->options([
-                        'present'  => 'Present',
-                        'absent'   => 'Absent',
-                        'half_day' => 'Half Day',
-                        'on_leave' => 'On Leave',
-                        'holiday'  => 'Holiday',
-                        'weekend'  => 'Weekend',
-                    ])
-                    ->required(),
-                    
-                TimePicker::make('check_in'),
-                TimePicker::make('check_out'),
-                TextInput::make('remarks')
-                ->columnSpanFull(),
-            ]);
-    }
+    public ?string $filterEmployee = null;
 
     public function fetchEvents(array $fetchInfo): array
     {
@@ -115,15 +77,64 @@ class AttendanceCalendarWidget extends FullCalendarWidget
             ->toArray();
     }
 
-    protected function handleEventCreate(array $data): Model
+    public function getFormSchema(): array
     {
-        return Attendance::create($data);
+        return [
+            Grid::make(2)
+                ->schema([
+
+                    Select::make('employee_id')
+                        ->label('Employee')
+                        ->options(
+                            Employee::where('status', 'active')
+                                ->pluck('name', 'id')
+                        )
+                        ->searchable()
+                        ->required(),
+
+                    DatePicker::make('date')
+                        ->required(),
+
+                    Select::make('status')
+                        ->options([
+                            'present' => 'Present',
+                            'absent' => 'Absent',
+                            'half_day' => 'Half Day',
+                            'on_leave' => 'On Leave',
+                            'holiday' => 'Holiday',
+                            'weekend' => 'Weekend',
+                        ])
+                        ->required(),
+
+                    TimePicker::make('check_in'),
+
+                    TimePicker::make('check_out'),
+
+                    Textarea::make('remarks')
+                        ->columnSpanFull(),
+                ]),
+        ];
     }
 
-    protected function handleEventUpdate(Model $record, array $data): Model
+    protected function headerActions(): array
     {
-        $record->update($data);
+        return [
+            CreateAction::make()
+                ->mountUsing(
+                    function (Schema $schema, array $arguments) {
+                        $schema->state([
+                            'date' => $arguments['start'] ?? today(),
+                        ]);
+                    }
+                ),
+        ];
+    }
 
-        return $record;
+    protected function modalActions(): array
+    {
+        return [
+            EditAction::make(),
+            DeleteAction::make(),
+        ];
     }
 }
