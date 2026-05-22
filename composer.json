@@ -13,6 +13,7 @@
         "laravel/framework": "^13.7",
         "laravel/tinker": "^3.0",
         "maatwebsite/excel": "*",
+        "saade/filament-fullcalendar": "v4.0.0-beta7",
         "spatie/laravel-activitylog": "*",
         "spatie/laravel-permission": "*"
     },

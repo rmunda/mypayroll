@@ -15,11 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Order matters:
+        // 1. Roles and permissions must exist before we assign them to users
+        // 2. Default data (departments, pay structures etc) seeds after
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+            DefaultDataSeeder::class,
         ]);
     }
 }
