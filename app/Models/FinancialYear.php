@@ -45,6 +45,12 @@ class FinancialYear extends Model
                      ->first();
     }
 
+    public function canBeDeleted(): bool
+    {
+        return $this->payrollRuns()->doesntExist()
+            && $this->holidays()->doesntExist();
+    }
+
     // when marking a new FY as current
     // automatically unset the previous one
     public function markAsCurrent(): void

@@ -20,7 +20,7 @@ class FinancialYearForm
                 DatePicker::make('end_date')
                     ->required(),
                 Toggle::make('is_current')
-                    ->required(),
+                    ->disabled(),
             ]);
     }
 }
