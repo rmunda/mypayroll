@@ -45,6 +45,18 @@ class FinancialYear extends Model
                      ->first();
     }
 
+    // public function hasLinkedData(): bool
+    // {
+    //     return $this->payrollRuns()->exists()
+    //         || $this->holidays()->exists(); // short-circuits — only runs 2nd query if 1st is false
+    // }
+
+    public function canBeEdited(): bool
+    {
+        return $this->payrollRuns()->doesntExist()
+            && $this->holidays()->doesntExist();
+    }
+
     public function canBeDeleted(): bool
     {
         return $this->payrollRuns()->doesntExist()

@@ -39,8 +39,34 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
             ])
+
+            // add this to inject css
+            // ->renderHook(
+            //     'panels::head.end',
+            //     fn () => new \Illuminate\Support\HtmlString('
+            //         <style>
+            //             /* Light grey body background */
+            //             .fi-main {
+            //                 background-color: rgb(var(--gray-100)) !important;
+            //             }
+
+            //             /* Input wrapper — this is the visible "box" the user sees */
+            //             .fi-input-wrp {
+            //                 border: 1.5px solid rgb(var(--gray-300)) !important;
+            //                 background-color: rgb(var(--gray-50)) !important;
+            //                 border-radius: 0.375rem !important;
+            //             }
+
+            //             /* The actual input inside */
+            //             .fi-input {
+            //                 background-color: rgb(var(--gray-100)) !important;
+            //             }
+            //         </style>
+            //     ')
+            // ) 
+
             ->brandName('MyPayroll') // <--- Add this line
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
