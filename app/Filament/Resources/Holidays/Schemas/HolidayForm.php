@@ -19,7 +19,9 @@ class HolidayForm
             ->components([
                 Select::make('financial_year_id')
                     ->label('Financial Year')
-                    ->options(fn() => FinancialYear::pluck('label', 'id')->toArray())
+                    ->options(fn() => FinancialYear::all()->mapWithKeys(fn($fy) => [
+                        $fy->id => $fy->name . ($fy->is_active ? ' (active)' : '')
+                    ])->toArray())
                     ->default(fn() => FinancialYear::latest()->value('id'))
                     ->required(),
                 TextInput::make('name')
