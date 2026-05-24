@@ -20,7 +20,7 @@ class HolidayForm
                 Select::make('financial_year_id')
                     ->label('Financial Year')
                     ->options(fn() => FinancialYear::all()->mapWithKeys(fn($fy) => [
-                        $fy->id => $fy->name . ($fy->is_active ? ' (active)' : '')
+                        $fy->id => $fy->label . ($fy->is_current ? ' (active)' : '')
                     ])->toArray())
                     ->default(fn() => FinancialYear::latest()->value('id'))
                     ->required(),
