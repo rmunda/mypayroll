@@ -9,14 +9,17 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
+use App\Models\FinancialYear;
+use Filament\Tables\Filters\SelectFilter;
+
 class HolidaysTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('financial_year_id')
-                    ->numeric()
+                TextColumn::make('financialYear.label')
+                    ->label('Financial Year')
                     ->sortable(),
                 TextColumn::make('name')
                     ->searchable(),
@@ -37,7 +40,10 @@ class HolidaysTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('financial_year_id')
+                    ->label('Financial Year')
+                    ->options(fn() => FinancialYear::pluck('label', 'id')->toArray())
+                    ->default(fn() => FinancialYear::where('is_current', true)->value('id'))
             ])
             ->recordActions([
                 EditAction::make(),

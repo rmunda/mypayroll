@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Holidays\Schemas;
 
+use App\Models\FinancialYear;
+
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -15,9 +17,11 @@ class HolidayForm
     {
         return $schema
             ->components([
-                TextInput::make('financial_year_id')
-                    ->required()
-                    ->numeric(),
+                Select::make('financial_year_id')
+                    ->label('Financial Year')
+                    ->options(fn() => FinancialYear::pluck('label', 'id')->toArray())
+                    ->default(fn() => FinancialYear::latest()->value('id'))
+                    ->required(),
                 TextInput::make('name')
                     ->required(),
                 DatePicker::make('date')
