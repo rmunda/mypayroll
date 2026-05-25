@@ -43,7 +43,7 @@ class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'PEOPLE';
+    protected static string|\UnitEnum|null $navigationGroup = 'People';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 

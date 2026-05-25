@@ -87,6 +87,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             // ADD: groups the sidebar into sections
             ->navigationGroups([
+                NavigationGroup::make('User Management'),
                 NavigationGroup::make('People'),
                 NavigationGroup::make('Payroll'),
                 NavigationGroup::make('Compliance'),
@@ -95,7 +96,7 @@ class AdminPanelProvider extends PanelProvider
 
             // ADD: register third-party plugins (install packages first)
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()->navigationGroup('User Management')->navigationSort(2), // ← add this,
                 FilamentFullCalendarPlugin::make()->selectable()->editable(),
             ])
             ->middleware([
@@ -113,4 +114,5 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
+    
 }

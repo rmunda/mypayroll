@@ -19,7 +19,7 @@ class DepartmentResource extends Resource
     protected static ?string $model = Department::class;
 
     // Add this lines here:
-    protected static string|\UnitEnum|null $navigationGroup = 'PEOPLE';
+    protected static string|\UnitEnum|null $navigationGroup = 'People';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
 
