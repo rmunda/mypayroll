@@ -29,6 +29,8 @@ use Filament\Tables\Table;
 
 use Filament\Tables\Columns\TextColumn;
 
+use Illuminate\Database\Eloquent\Builder;
+
 class LeaveResource extends Resource
 {
     protected static ?string $model = Leave::class;
@@ -151,6 +153,19 @@ class LeaveResource extends Resource
 
                 EditAction::make(),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder  // just add this method for scoping
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->hasRole('employee')) {
+            return $query->whereHas('employee', fn ($q) =>
+                $q->where('user_id', auth()->id())
+            );
+        }
+
+        return $query;
     }
 
     public static function getRelations(): array

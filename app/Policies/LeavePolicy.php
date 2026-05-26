@@ -14,7 +14,7 @@ class LeavePolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:Leave');
+        return $authUser->can('ViewAny:Leave') || $authUser->can('View:Leave');
     }
 
     public function view(AuthUser $authUser, Leave $leave): bool

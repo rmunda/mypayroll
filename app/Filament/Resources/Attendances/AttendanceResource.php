@@ -33,6 +33,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 
+use Illuminate\Database\Eloquent\Builder;
+
 class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
@@ -129,6 +131,19 @@ class AttendanceResource extends Resource
                         ])
                     ),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder  // add this method for scoping the employee role to see list of personal attendance
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->hasRole('employee')) {
+            return $query->whereHas('employee', fn ($q) =>
+                $q->where('user_id', auth()->id())
+            );
+        }
+
+        return $query;
     }
 
     public static function getRelations(): array

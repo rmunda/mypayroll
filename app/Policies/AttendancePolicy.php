@@ -14,7 +14,7 @@ class AttendancePolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:Attendance');
+        return $authUser->can('ViewAny:Attendance') || $authUser->can('View:Attendance');
     }
 
     public function view(AuthUser $authUser, Attendance $attendance): bool
