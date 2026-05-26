@@ -6,6 +6,8 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use App\Models\Employee;
 use Filament\Schemas\Schema;
 
 class LeaveForm
@@ -14,33 +16,47 @@ class LeaveForm
     {
         return $schema
             ->components([
-                TextInput::make('employee_id')
-                    ->required()
-                    ->numeric(),
+
+                Select::make('employee_id')
+                    ->label('Employee')
+                    ->options(
+                        Employee::pluck('name', 'id')
+                    )
+                    ->searchable()
+                    ->required(),
+
                 Select::make('type')
                     ->options([
-            'casual' => 'Casual',
-            'sick' => 'Sick',
-            'earned' => 'Earned',
-            'maternity' => 'Maternity',
-            'unpaid' => 'Unpaid',
-        ])
+                        'casual' => 'Casual',
+                        'sick' => 'Sick',
+                        'earned' => 'Earned',
+                        'maternity' => 'Maternity',
+                        'unpaid' => 'Unpaid',
+                    ])
                     ->required(),
+
                 DatePicker::make('from_date')
-                    ->required(),
-                DatePicker::make('to_date')
-                    ->required(),
-                TextInput::make('days')
                     ->required()
-                    ->numeric(),
-                TextInput::make('reason'),
-                Select::make('status')
-                    ->options(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'])
-                    ->default('pending')
+                    ->live(),
+
+                DatePicker::make('to_date')
+                    ->required()
+                    ->afterOrEqual('from_date')
+                    ->live(),
+
+                TextInput::make('days')
+                    ->numeric()
                     ->required(),
-                TextInput::make('approved_by')
-                    ->numeric(),
-                DateTimePicker::make('approved_at'),
+
+                Textarea::make('reason'),
+
+                Select::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ])
+                    ->default('pending'),
             ]);
     }
 }

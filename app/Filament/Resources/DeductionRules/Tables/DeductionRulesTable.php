@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use App\Models\DeductionRule;
 use Filament\Tables\Table;
 
 class DeductionRulesTable
@@ -15,40 +16,38 @@ class DeductionRulesTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->searchable(),
+
+                TextColumn::make('name'),
+
                 TextColumn::make('type')
-                    ->badge(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'percentage' => 'info',
+                        'fixed' => 'warning',
+                        default => 'gray',
+                    }),
+
                 TextColumn::make('value')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('applies_to')
-                    ->badge(),
-                TextColumn::make('deduction_side')
-                    ->badge(),
+                    ->formatStateUsing(
+                        fn ($state, DeductionRule $record) =>
+                            $record->type === 'percentage'
+                                ? $state . '%'
+                                : 'INR ' . $state
+                    ),
+
+                TextColumn::make('applies_to'),
+
+                TextColumn::make('deduction_side'),
+
                 IconColumn::make('is_statutory')
                     ->boolean(),
+
                 IconColumn::make('is_active')
                     ->boolean(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
+
+            ->actions([
                 EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

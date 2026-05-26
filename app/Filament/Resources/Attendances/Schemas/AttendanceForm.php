@@ -8,32 +8,27 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Schema;
 
+use App\Models\Employee;
+
 class AttendanceForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('employee_id')
-                    ->required()
-                    ->numeric(),
-                DatePicker::make('date')
-                    ->required(),
-                Select::make('status')
-                    ->options([
-            'present' => 'Present',
-            'absent' => 'Absent',
-            'half_day' => 'Half day',
-            'on_leave' => 'On leave',
-            'holiday' => 'Holiday',
-            'weekend' => 'Weekend',
-        ])
-                    ->required(),
-                TimePicker::make('check_in'),
-                TimePicker::make('check_out'),
-                TextInput::make('hours_worked')
-                    ->numeric(),
-                TextInput::make('remarks'),
-            ]);
+        return $schema->components([
+            Select::make('employee_id')
+                ->label('Employee')
+                ->options(Employee::where('status','active')->pluck('name','id'))
+                ->searchable()->required(),
+            DatePicker::make('date')->required()->default(today()),
+            Select::make('status')
+                ->options([
+                    'present'=>'Present','absent'=>'Absent',
+                    'half_day'=>'Half Day','on_leave'=>'On Leave',
+                    'holiday'=>'Holiday','weekend'=>'Weekend',
+                ])->required(),
+            TimePicker::make('check_in'),
+            TimePicker::make('check_out'),
+            TextInput::make('remarks'),
+        ]);
     }
 }

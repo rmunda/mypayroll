@@ -2,110 +2,123 @@
 
 namespace App\Filament\Resources\PaySlips\Tables;
 
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
+use App\Mail\PaySlipMail;
+
+use App\Services\PdfService;
+
+use Filament\Tables\Filters\SelectFilter;
+
+use Filament\Notifications\Notification;
+
+use Illuminate\Support\Facades\Mail;
+
 class PaySlipsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
+
             ->columns([
-                TextColumn::make('payroll_run_id')
-                    ->numeric()
+
+                TextColumn::make('employee.employee_code')
+                    ->label('EMP ID')
+                    ->fontFamily('mono'),
+
+                TextColumn::make('employee.name')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('employee_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('working_days')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('present_days')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('leave_days')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('absent_days')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('basic')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('hra')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('transport_allowance')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('special_allowance')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('bonus')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('arrears')
-                    ->numeric()
-                    ->sortable(),
+
+                TextColumn::make('payrollRun.period_label')
+                    ->label('Period'),
+
                 TextColumn::make('gross_earnings')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('pf_employee')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('pf_employer')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('esi_employee')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('esi_employer')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('professional_tax')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('tds')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('other_deductions')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Gross')
+                    ->money('INR'),
+
                 TextColumn::make('total_deductions')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Deductions')
+                    ->money('INR'),
+
                 TextColumn::make('net_pay')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Net pay')
+                    ->money('INR')
+                    ->weight('bold'),
+
                 TextColumn::make('status')
-                    ->badge(),
-                TextColumn::make('pdf_path')
-                    ->searchable(),
-                TextColumn::make('sent_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'approved' => 'warning',
+                        'sent' => 'success',
+                        'paid' => 'info',
+                        default => 'gray',
+                    }),
             ])
+
             ->filters([
-                //
+
+                SelectFilter::make('employee')
+                    ->relationship('employee', 'name'),
+
+                SelectFilter::make('payrollRun')
+                    ->relationship('payrollRun', 'period_label')
+                    ->label('Period'),
             ])
-            ->recordActions([
-                EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+
+            ->actions([
+
+                ViewAction::make(),
+
+                Action::make('download')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->label('Download PDF')
+
+                    ->action(function (PaySlip $record) {
+
+                        $path = app(PdfService::class)
+                            ->generatePaySlip($record);
+
+                        return response()->download(
+                            storage_path("app/{$path}")
+                        );
+                    }),
+
+                Action::make('send')
+                    ->icon('heroicon-o-envelope')
+
+                    ->visible(fn (PaySlip $record) =>
+                        $record->status !== 'sent'
+                    )
+
+                    ->action(function (PaySlip $record) {
+
+                        $path = app(PdfService::class)
+                            ->generatePaySlip($record);
+
+                        Mail::to($record->employee->email)
+                            ->send(
+                                new PaySlipMail($record, $path)
+                            );
+
+                        $record->update([
+                            'status' => 'sent',
+                            'sent_at' => now(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Pay slip sent')
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
 }

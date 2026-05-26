@@ -7,9 +7,18 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\Action;
 use Filament\Tables\Table;
+
+use App\Models\Employee;
+
+use App\Filament\Resources\PaySlips\PaySlipResource;
+
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Filters\SelectFilter;
+
 
 class EmployeesTable
 {
@@ -17,77 +26,77 @@ class EmployeesTable
     {
         return $table
             ->columns([
+
                 TextColumn::make('employee_code')
-                    ->searchable(),
+                    ->label('ID')
+                    ->sortable()
+                    ->searchable()
+                    ->fontFamily('mono'),
+
                 TextColumn::make('name')
+                    ->sortable()
                     ->searchable(),
-                TextColumn::make('email')
-                    ->label('Email address')
-                    ->searchable(),
-                TextColumn::make('phone')
-                    ->searchable(),
-                TextColumn::make('department_id')
-                    ->numeric()
+
+                TextColumn::make('department.name')
+                    ->label('Dept')
                     ->sortable(),
-                TextColumn::make('pay_structure_id')
-                    ->numeric()
-                    ->sortable(),
+
                 TextColumn::make('designation')
                     ->searchable(),
+
                 TextColumn::make('basic_salary')
-                    ->numeric()
+                    ->label('Basic')
+                    ->money('INR')
                     ->sortable(),
-                TextColumn::make('pay_frequency')
-                    ->badge(),
-                TextColumn::make('bank_name')
-                    ->searchable(),
-                TextColumn::make('bank_account')
-                    ->searchable(),
-                TextColumn::make('ifsc_code')
-                    ->searchable(),
-                TextColumn::make('pan_number')
-                    ->searchable(),
-                TextColumn::make('uan_number')
-                    ->searchable(),
-                TextColumn::make('esic_number')
-                    ->searchable(),
+
                 TextColumn::make('date_of_joining')
-                    ->date()
+                    ->date('M Y')
                     ->sortable(),
-                TextColumn::make('date_of_leaving')
-                    ->date()
-                    ->sortable(),
+
                 TextColumn::make('status')
-                    ->badge(),
-                TextColumn::make('tax_regime')
-                    ->badge(),
-                TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'on_leave' => 'warning',
+                        'inactive' => 'danger',
+                        default => 'gray',
+                    }),
             ])
+
             ->filters([
-                TrashedFilter::make(),
+
+                SelectFilter::make('department')
+                    ->relationship('department', 'name'),
+
+                SelectFilter::make('status')
+                    ->options([
+                        'active' => 'Active',
+                        'inactive' => 'Inactive',
+                        'on_leave' => 'On Leave',
+                    ]),
             ])
-            ->recordActions([
+
+            ->actions([
+
                 EditAction::make(),
+
+                Action::make('payslips')
+                    ->icon('heroicon-o-document-text')
+                    ->label('Pay slips')
+                    ->url(fn (Employee $record) =>
+                        PaySlipResource::getUrl(
+                            'index',
+                            [
+                                'tableFilters[employee][value]' => $record->id,
+                            ]
+                        )
+                    ),
             ])
-            ->toolbarActions([
+
+            ->bulkActions([
+
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
                 ]),
             ]);
     }

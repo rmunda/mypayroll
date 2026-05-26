@@ -13,25 +13,46 @@ class DeductionRuleForm
     {
         return $schema
             ->components([
+
                 TextInput::make('name')
                     ->required(),
+
                 Select::make('type')
-                    ->options(['percentage' => 'Percentage', 'fixed' => 'Fixed'])
-                    ->required(),
-                TextInput::make('value')
+                    ->options([
+                        'percentage' => 'Percentage (%)',
+                        'fixed' => 'Fixed amount (INR)',
+                    ])
                     ->required()
-                    ->numeric(),
+                    ->live(),
+
+                TextInput::make('value')
+                    ->numeric()
+                    ->required()
+                    ->suffix(fn (callable $get) =>
+                        $get('type') === 'percentage'
+                            ? '%'
+                            : 'INR'
+                    ),
+
                 Select::make('applies_to')
-                    ->options(['basic' => 'Basic', 'gross' => 'Gross'])
+                    ->options([
+                        'basic' => 'Basic salary',
+                        'gross' => 'Gross salary',
+                    ])
                     ->required(),
+
                 Select::make('deduction_side')
-                    ->options(['employee' => 'Employee', 'employer' => 'Employer', 'both' => 'Both'])
-                    ->default('employee')
-                    ->required(),
+                    ->options([
+                        'employee' => 'Employee',
+                        'employer' => 'Employer',
+                        'both' => 'Both',
+                    ]),
+
                 Toggle::make('is_statutory')
-                    ->required(),
+                    ->label('Statutory deduction'),
+
                 Toggle::make('is_active')
-                    ->required(),
+                    ->default(true),
             ]);
     }
 }

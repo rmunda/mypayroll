@@ -51,5 +51,24 @@ class Employee extends Model
                 $e->employee_code = 'EMP-' . str_pad($next, 3, '0', STR_PAD_LEFT);
             }
         });
+
+        // Auto create User account when Employee is created
+        static::created(function (Employee $e) {
+            $user = \App\Models\User::firstOrCreate(
+                ['email' => $e->email],
+                [
+                    'name'      => $e->name,
+                    'password'  => bcrypt('Welcome@123'), // default password
+                    'is_active' => true,
+                ]
+            );
+
+            // assign employee role
+            $user->assignRole('employee');
+
+            // link user to employee
+            $e->update(['user_id' => $user->id]);
+        });
     }
+
 }

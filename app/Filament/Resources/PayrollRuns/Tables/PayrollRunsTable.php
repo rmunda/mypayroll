@@ -2,11 +2,19 @@
 
 namespace App\Filament\Resources\PayrollRuns\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Actions\ViewAction;
+
+use App\Jobs\SendPaySlipsJob;
+
+use App\Models\PayrollRun;
+
+use App\Services\PayrollService;
 
 class PayrollRunsTable
 {
@@ -14,53 +22,108 @@ class PayrollRunsTable
     {
         return $table
             ->columns([
+
                 TextColumn::make('period_label')
+                    ->sortable()
                     ->searchable(),
+
                 TextColumn::make('period_start')
-                    ->date()
-                    ->sortable(),
+                    ->date('d M Y'),
+
                 TextColumn::make('period_end')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('status')
-                    ->badge(),
+                    ->date('d M Y'),
+
                 TextColumn::make('total_gross')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Gross')
+                    ->money('INR'),
+
                 TextColumn::make('total_deductions')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Deductions')
+                    ->money('INR'),
+
                 TextColumn::make('total_net')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('processed_by')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('approved_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('paid_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Net pay')
+                    ->money('INR')
+                    ->weight('bold'),
+
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'processing' => 'warning',
+                        'approved', 'paid' => 'success',
+                        default => 'gray',
+                    }),
             ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
+
+            ->actions([
+
+                Action::make('process')
+                    ->label('Process payroll')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->color('warning')
+
+                    ->visible(fn (PayrollRun $record) =>
+                        $record->isDraft()
+                    )
+
+                    ->requiresConfirmation()
+
+                    ->action(function (PayrollRun $record) {
+
+                        app(PayrollService::class)
+                            ->process($record);
+
+                        Notification::make()
+                            ->title('Payroll processed!')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+
+                    ->visible(fn (PayrollRun $record) =>
+                        $record->status === 'processing'
+                    )
+
+                    ->requiresConfirmation()
+
+                    ->action(function (PayrollRun $record) {
+
+                        $record->update([
+                            'status' => 'approved',
+                            'approved_at' => now(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Payroll approved')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('send_slips')
+                    ->label('Send pay slips')
+                    ->icon('heroicon-o-envelope')
+
+                    ->visible(fn (PayrollRun $record) =>
+                        $record->isApproved()
+                    )
+
+                    ->action(function (PayrollRun $record) {
+
+                        SendPaySlipsJob::dispatch($record);
+
+                        Notification::make()
+                            ->title('Pay slips queued for delivery')
+                            ->success()
+                            ->send();
+                    }),
+
                 EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+
+                ViewAction::make(),
             ]);
     }
 }

@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Leaves\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use App\Models\Leave;
 use Filament\Tables\Table;
 
 class LeavesTable
@@ -14,49 +16,65 @@ class LeavesTable
     {
         return $table
             ->columns([
-                TextColumn::make('employee_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('type')
-                    ->badge(),
-                TextColumn::make('from_date')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('to_date')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('days')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('reason')
+
+                TextColumn::make('employee.name')
                     ->searchable(),
+
+                TextColumn::make('type')
+                    ->badge()
+                    ->color('info'),
+
+                TextColumn::make('from_date')
+                    ->date('d M Y'),
+
+                TextColumn::make('to_date')
+                    ->date('d M Y'),
+
+                TextColumn::make('days'),
+
                 TextColumn::make('status')
-                    ->badge(),
-                TextColumn::make('approved_by')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('approved_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'approved' => 'success',
+                        'rejected' => 'danger',
+                        default => 'gray',
+                    }),
             ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
+
+            ->actions([
+
+                Action::make('approve')
+                    ->color('success')
+                    ->icon('heroicon-o-check')
+
+                    ->visible(fn (Leave $record) =>
+                        $record->status === 'pending'
+                    )
+
+                    ->action(fn (Leave $record) =>
+                        $record->update([
+                            'status' => 'approved',
+                            'approved_by' => auth()->id(),
+                            'approved_at' => now(),
+                        ])
+                    ),
+
+                Action::make('reject')
+                    ->color('danger')
+                    ->icon('heroicon-o-x-mark')
+
+                    ->visible(fn (Leave $record) =>
+                        $record->status === 'pending'
+                    )
+
+                    ->action(fn (Leave $record) =>
+                        $record->update([
+                            'status' => 'rejected',
+                        ])
+                    ),
+
                 EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

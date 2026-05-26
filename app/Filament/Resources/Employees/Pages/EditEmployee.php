@@ -7,6 +7,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Notifications\Notification;
 
 class EditEmployee extends EditRecord
 {
@@ -19,5 +20,27 @@ class EditEmployee extends EditRecord
             ForceDeleteAction::make(),
             RestoreAction::make(),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        $data = $this->form->getRawState();
+
+        if (!isset($data['is_login_active'])) return;
+
+        $user = $this->record->user;
+
+        if (!$user) return;
+
+        $user->update(['is_active' => $data['is_login_active']]);
+
+        Notification::make()
+            ->title(
+                $data['is_login_active']
+                    ? 'Login enabled for ' . $this->record->name
+                    : 'Login disabled for ' . $this->record->name
+            )
+            ->success()
+            ->send();
     }
 }
