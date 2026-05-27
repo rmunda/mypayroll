@@ -6,7 +6,7 @@ use App\Filament\Resources\Attendances\Pages\CreateAttendance;
 use App\Filament\Resources\Attendances\Pages\EditAttendance;
 use App\Filament\Resources\Attendances\Pages\ListAttendances;
 use App\Filament\Resources\Attendances\Pages\AttendanceCalendar;
-use App\Filament\Resource\Atendances\Schemas\AttendanceForm;
+use App\Filament\Resources\Attendances\Schemas\AttendanceForm;
 use App\Filament\Resources\Attendances\Tables\AttendancesTable;
 use App\Models\Attendance;
 use BackedEnum;
@@ -29,7 +29,7 @@ class AttendanceResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return AtendanceForm::configure($schema);
+        return AttendanceForm::configure($schema);
     }
 
     public static function table(Table $table): Table
