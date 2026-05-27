@@ -103,10 +103,17 @@ class PayrollService
 
     protected function getWorkingDays(Carbon $start, Carbon $end): int
     {
+        // Get all holidays in this period
+        $holidays = Holiday::forPeriod($start, $end)
+                    ->pluck('date')
+                    ->map(fn($d) => $d->format('Y-m-d'))
+                    ->toArray(); 
+
         $days = 0;
         $cur  = $start->copy();
         while ($cur->lte($end)) {
-            if (!$cur->isWeekend()) $days++;
+            // Skip weekends AND holidays
+            if (!$cur->isWeekend() && !in_array($cur->format('Y-m-d'), $holidays)) $days++;
             $cur->addDay();
         }
         return $days;
