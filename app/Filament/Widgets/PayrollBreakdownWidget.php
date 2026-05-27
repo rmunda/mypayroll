@@ -8,6 +8,11 @@ class PayrollBreakdownWidget extends ChartWidget
 {
     protected ?string $heading = 'Payroll Breakdown Widget';
 
+    public static function canView(): bool
+    {
+        return auth()->user()->hasAnyRole(['admin']);
+    }
+
     protected function getData(): array
     {
         return [
