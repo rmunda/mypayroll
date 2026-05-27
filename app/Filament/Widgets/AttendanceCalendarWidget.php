@@ -34,18 +34,17 @@ class AttendanceCalendarWidget extends FullCalendarWidget
 
     public ?string $filterEmployee = null;
 
+    public static function canView(): bool
+    {
+        return auth()->user()->hasAnyRole(['admin', 'hr', 'manager', 'employee']);
+    }
+
     public function fetchEvents(array $fetchInfo): array
     {
-        $colors = [
-            'present' => '#1D9E75',
-            'absent' => '#E24B4A',
-            'half_day' => '#EF9F27',
-            'on_leave' => '#378ADD',
-            'holiday' => '#7F77DD',
-            'weekend' => '#9E9E98',
-        ];
+        $user = auth()->user();
+        $employee = $user->employee;
 
-        return Attendance::query()
+        $query =  Attendance::query()
             ->with('employee')
             ->whereBetween('date', [
                 $fetchInfo['start'],
@@ -57,8 +56,21 @@ class AttendanceCalendarWidget extends FullCalendarWidget
                     'employee_id',
                     $this->filterEmployee
                 )
-            )
-            ->get()
+            );
+        
+        // employee can only see their own attendance
+        if ($user->hasRole('employee') && $employee) {
+            $query->where('employee_id', $employee->id);
+        }
+
+        // manager sees only their department
+        if ($user->hasRole('manager') && $employee) {
+            $query->whereHas('employee', function ($q) use ($employee) {
+                $q->where('department_id', $employee->department_id);
+            });
+        }    
+            
+        return $query->get()
             ->map(
                 fn (Attendance $attendance) => EventData::make()
                     ->id($attendance->id)
@@ -69,12 +81,10 @@ class AttendanceCalendarWidget extends FullCalendarWidget
                     )
                     ->start($attendance->date)
                     ->end($attendance->date)
-                    ->backgroundColor(
-                        $colors[$attendance->status] ?? '#cccccc'
-                    )
+                    ->backgroundColor($this->getColor($attendance->status))
                     ->toArray()
             )
-            ->toArray();
+            ->toArray();    
     }
 
     public function getFormSchema(): array
@@ -136,5 +146,18 @@ class AttendanceCalendarWidget extends FullCalendarWidget
             EditAction::make(),
             DeleteAction::make(),
         ];
+    }
+
+    private function getColor(string $status): string
+    {
+        return match($status) {
+            'present'  => '#1D9E75',
+            'absent'   => '#E24B4A',
+            'half_day' => '#EF9F27',
+            'on_leave' => '#378ADD',
+            'holiday'  => '#7F77DD',
+            'weekend'  => '#9E9E98',
+            default    => '#cccccc',
+        };
     }
 }
