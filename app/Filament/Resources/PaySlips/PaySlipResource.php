@@ -13,6 +13,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
+use Illuminate\Database\Eloquent\Builder;
+
 class PaySlipResource extends Resource
 {
     protected static ?string $model = PaySlip::class;
@@ -31,6 +33,19 @@ class PaySlipResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return PaySlipInfoList::configure($schema);
+    }
+
+    public static function getEloquentQuery(): Builder  // add this method for scoping the employee role
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->hasRole('employee')) {
+            return $query->whereHas('employee', fn ($q) =>
+                $q->where('user_id', auth()->id())
+            );
+        }
+
+        return $query;
     }
 
     public static function getRelations(): array
