@@ -6,6 +6,7 @@ use App\Models\PayrollRun;
 use App\Models\PaySlip;
 use App\Models\DeductionRule;
 use App\Models\Attendance;
+use App\Models\Holiday;
 use Carbon\Carbon;
 
 class PayrollService
