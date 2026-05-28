@@ -14,7 +14,7 @@ class PaySlipPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:PaySlip') || $authUser->can('View:PaySlip');
+        return $authUser->can('ViewAny:PaySlip');
     }
 
     public function view(AuthUser $authUser, PaySlip $paySlip): bool
