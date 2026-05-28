@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use App\Models\Employee;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class LeaveForm
 {
@@ -19,9 +20,20 @@ class LeaveForm
 
                 Select::make('employee_id')
                     ->label('Employee')
-                    ->options(
-                        Employee::pluck('name', 'id')
-                    )
+                    ->options(function () {
+
+                        $user = Auth::user();
+
+                        // if logged in user is employee
+                        if ($user->hasRole('employee')) {
+
+                            return Employee::where('user_id', $user->id)
+                                ->pluck('name', 'id');
+                        }
+
+                        // admin/hr can see all employees
+                        return Employee::pluck('name', 'id');
+                    })
                     ->searchable()
                     ->required(),
 
@@ -50,13 +62,31 @@ class LeaveForm
 
                 Textarea::make('reason'),
 
+                // STATUS — different options per role
                 Select::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                    ])
-                    ->default('pending'),
+                    ->options(function () {
+                        // employee can only set Request or Cancelled
+                        if (auth()->user()->hasRole('employee')) {
+                            return [
+                                'request'   => 'Request',
+                                'cancelled' => 'Cancel request',
+                            ];
+                        }
+                        // hr, admin, manager see operational statuses
+                        return [
+                            'pending'  => 'Pending (under review)',
+                            'approved' => 'Approved',
+                            'rejected' => 'Rejected',
+                        ];
+                    })
+                    ->default(function () {
+                        // auto set to request for employee
+                        if (auth()->user()->hasRole('employee')) {
+                            return 'request';
+                        }
+                        return 'pending';
+                    })
+                    ->required(),
             ]);
     }
 }
