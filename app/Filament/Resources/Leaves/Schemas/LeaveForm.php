@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use App\Models\Employee;
+use App\Models\Holiday;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -53,59 +54,17 @@ class LeaveForm
                 DatePicker::make('from_date')
                     ->required()
                     ->live()
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        // Needs update time to time on company holiday policy
-                        $from = $get('from_date');
-                        $to = $get('to_date');
-
-                        if ($from && $to) {
-
-                            $start = Carbon::parse($from);
-                            $end = Carbon::parse($to);
-
-                            $days = 0;
-
-                            while ($start->lte($end)) {
-
-                                if (!$start->isWeekend()) {
-                                    $days++;
-                                }
-
-                                $start->addDay();
-                            }
-
-                            $set('days', $days);
-                        }
-                    }),
+                    ->afterStateUpdated(fn (Get $get, Set $set) =>
+                        self::calculateDays($get, $set)
+                    ),
 
                 DatePicker::make('to_date')
                     ->required()
                     ->afterOrEqual('from_date')
                     ->live()
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        // Needs update time to time on company holiday policy
-                        $from = $get('from_date');
-                        $to = $get('to_date');
-
-                        if ($from && $to) {
-
-                            $start = Carbon::parse($from);
-                            $end = Carbon::parse($to);
-
-                            $days = 0;
-
-                            while ($start->lte($end)) {
-
-                                if (!$start->isWeekend()) {
-                                    $days++;
-                                }
-
-                                $start->addDay();
-                            }
-
-                            $set('days', $days);
-                        }
-                    }),
+                    ->afterStateUpdated(fn (Get $get, Set $set) =>
+                        self::calculateDays($get, $set)
+                    ),    
 
                 TextInput::make('days')
                     ->numeric()
@@ -139,5 +98,41 @@ class LeaveForm
                     })
                     ->required(),
             ]);
+    }
+
+    protected static function calculateDays(Get $get, Set $set): void
+    {
+        // Needs update on change in company leave and holiday policy
+        $from = $get('from_date');
+        $to = $get('to_date');
+
+        if ($from && $to) {
+
+            $start = Carbon::parse($from)->copy();
+            $end = Carbon::parse($to);
+
+            $days = 0;
+
+            while ($start->lte($end)) {
+
+                // Skip weekends
+                if ($start->isWeekend()) {
+                    $start->addDay();
+                    continue;
+                }
+
+                // Skip public holidays
+                if (Holiday::isHoliday($start)) {
+                    $start->addDay();
+                    continue;
+                }
+
+                $days++;
+
+                $start->addDay();
+            }
+
+            $set('days', $days);
+        }
     }
 }
