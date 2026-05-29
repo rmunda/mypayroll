@@ -18,7 +18,13 @@ class HolidayResource extends Resource
 {
     protected static ?string $model = Holiday::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Compliance';
+    protected static string|\UnitEnum|null $navigationGroup = 'Leave Management';
+
+    protected static ?string $navigationLabel = 'Holiday List';
+
+    protected static ?string $modelLabel = 'Holiday';
+
+    protected static ?string $pluralModelLabel = 'Holidays';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSun;
 

@@ -20,11 +20,17 @@ class LeaveResource extends Resource
 {
     protected static ?string $model = Leave::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'People';
+    protected static string|\UnitEnum|null $navigationGroup = 'Leave Management';
+
+    protected static ?string $navigationLabel = 'Leave Requests';
+
+    protected static ?string $modelLabel = 'Leave Request';
+
+    protected static ?string $pluralModelLabel = 'Leave Requests';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
