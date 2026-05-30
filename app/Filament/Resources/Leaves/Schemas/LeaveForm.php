@@ -41,15 +41,23 @@ class LeaveForm
                     ->searchable()
                     ->required(),
 
-                Select::make('type')
-                    ->options([
-                        'casual' => 'Casual',
-                        'sick' => 'Sick',
-                        'earned' => 'Earned',
-                        'maternity' => 'Maternity',
-                        'unpaid' => 'Unpaid',
-                    ])
-                    ->required(),
+                // from database
+                Select::make('leave_type_id')
+                    ->label('Leave type')
+                    ->options(
+                        LeaveType::where('is_active', true)
+                            ->pluck('name', 'id')
+                    )
+                    ->searchable()
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        // auto set max days hint
+                        $type = LeaveType::find($state);
+                        if ($type && $type->min_notice_days > 0) {
+                            // you can show a helper text dynamically
+                        }
+                    }),
 
                 DatePicker::make('from_date')
                     ->required()
