@@ -21,7 +21,7 @@ class PaySlipResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Payroll';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-receipt-text';
 
     protected static ?int $navigationSort = 2;
 

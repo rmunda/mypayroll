@@ -23,7 +23,7 @@ class EmployeeResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'People';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-users-round';
 
     protected static ?int $navigationSort = 1;
 

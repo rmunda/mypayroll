@@ -28,7 +28,7 @@ class LeaveResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Leave Requests';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-calendar-minus-2';
 
     protected static ?int $navigationSort = 1;
 

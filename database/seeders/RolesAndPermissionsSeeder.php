@@ -8,143 +8,61 @@ use Spatie\Permission\Models\Permission;
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
-    {   
-        // Clear the permission cache first
-        // Spatie caches permissions for performance
-        // If you don't clear it, old cached data causes conflicts
+    {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // -------------------------
-        // CREATE ALL PERMISSIONS
-        // -------------------------
+        // roles only — Shield creates the permissions
+        $admin    = Role::firstOrCreate(['name' => 'admin',    'guard_name' => 'web']);
+        $hr       = Role::firstOrCreate(['name' => 'hr',       'guard_name' => 'web']);
+        $manager  = Role::firstOrCreate(['name' => 'manager',  'guard_name' => 'web']);
+        $employee = Role::firstOrCreate(['name' => 'employee', 'guard_name' => 'web']);
 
-        $permissions = [
-            // Employee permissions
-            'ViewAny:Employee',
-            'View:Employee',
-            'Create:Employee',
-            'Update:Employee',
-            'Delete:Employee',
-            'DeleteAny:Employee',
-            'Restore:Employee',
-            'RestoreAny:Employee',
-            'ForceDelete:Employee',
-            'ForceDeleteAny:Employee',
-            'Replicate:Employee',
-            'Reorder:Employee',
-
-            // Payroll permissions
-            'ViewAny:PayrollRun',
-            'View:PayrollRun',
-            'Create:PayrollRun',
-            'Update:PayrollRun',
-            'Process:Payroll',
-            'Approve:Payroll',
-            'Send:Payslips',
-
-            // Pay slip permissions
-            'ViewAny:PaySlip',
-            'View:PaySlip',
-            'Download:PaySlip',
-
-            // Attendance permissions
-            'ViewAny:Attendance',
-            'View:Attendance',
-            'Create:Attendance',
-            'Update:Attendance',
-
-            // Leave permissions
-            'ViewAny:Leave',
-            'View:Leave',
-            'Create:Leave',
-            'Update:Leave',
-            'Approve:Leave',
-
-            // Deduction permissions
-            'ViewAny:DeductionRule',
-            'View:DeductionRule',
-            'Create:DeductionRule',
-            'Update:DeductionRule',
-
-            // Department permissions
-            'ViewAny:Department',
-            'View:Department',
-            'Create:Department',
-            'Update:Department',
-
-            // FinancialYear
-            'ViewAny:FinancialYear','View:FinancialYear',
-            'Create:FinancialYear', 'Update:FinancialYear',
-            'Delete:FinancialYear',
-
-            // Holiday
-            'ViewAny:Holiday',     'View:Holiday',
-            'Create:Holiday',      'Update:Holiday',
-            'Delete:Holiday',      'DeleteAny:Holiday',
-
-            // Report permissions
-            'View:Reports',
-            'Export:Reports',
-
-            // User management permissions
-            'ViewAny:User',
-            'View:User',
-            'Create:User',
-            'Update:User',
-            'Delete:User',
-        ];
-
-        // -------------------------
-        // CREATE ROLES AND ASSIGN PERMISSIONS
-        // -------------------------
-
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
-        }
-
-        // ADMIN — can do absolutely everything
-        $admin = Role::firstOrCreate(['name' => 'admin']);
+        // admin gets everything
         $admin->syncPermissions(Permission::all());
 
-        // HR — everything except user management
-        $hr = Role::firstOrCreate(['name' => 'hr']);
-        $hr->syncPermissions([
-            'ViewAny:Employee', 'View:Employee', 'Create:Employee', 'Update:Employee',
-            'ViewAny:PayrollRun', 'View:PayrollRun', 'Create:PayrollRun',
-            'Update:PayrollRun', 'Process:Payroll', 'Send:Payslips',
-            'ViewAny:PaySlip', 'View:PaySlip', 'Download:PaySlip',
-            'ViewAny:Attendance', 'View:Attendance', 'Create:Attendance', 'Update:Attendance',
-            'ViewAny:Leave', 'View:Leave', 'Update:Leave', 'Approve:Leave',
-            'ViewAny:DeductionRule', 'View:DeductionRule',
-            'ViewAny:Department', 'View:Department',
-            // financial year (read only)
-            'ViewAny:FinancialYear','View:FinancialYear',
+        // hr
+        $hr->syncPermissions(
+            Permission::whereIn('name', [
+                'ViewAny:Employee',    'View:Employee',
+                'Create:Employee',     'Update:Employee',
+                'ViewAny:PayrollRun',  'View:PayrollRun',
+                'Create:PayrollRun',   'Update:PayrollRun',
+                'ViewAny:PaySlip',     'View:PaySlip',
+                'ViewAny:Attendance',  'View:Attendance',
+                'Create:Attendance',   'Update:Attendance',
+                'ViewAny:Leave',       'View:Leave',
+                'Update:Leave',
+                'ViewAny:Department',  'View:Department',
+                'ViewAny:Holiday',     'View:Holiday',
+                'ViewAny:FinancialYear','View:FinancialYear',
+                'ViewAny:LeaveType',   'View:LeaveType',
+                'ViewAny:LeaveBalance','View:LeaveBalance',
+            ])->get()
+        );
 
-            // holidays (read only)
-            'ViewAny:Holiday',     'View:Holiday',
-            'View:Reports', 'Export:Reports',
-        ]);
+        // manager
+        $manager->syncPermissions(
+            Permission::whereIn('name', [
+                'ViewAny:Employee',   'View:Employee',
+                'ViewAny:Attendance', 'View:Attendance',
+                'Create:Attendance',  'Update:Attendance',
+                'ViewAny:Leave',      'View:Leave',
+                'ViewAny:PaySlip',    'View:PaySlip',
+                'ViewAny:Holiday',    'View:Holiday',
+            ])->get()
+        );
 
-        // MANAGER — can see their team, approve leaves, view attendance
-        $manager = Role::firstOrCreate(['name' => 'manager']);
-        $manager->syncPermissions([
-            'ViewAny:Employee', 'View:Employee',
-            'ViewAny:Attendance', 'View:Attendance', 'Create:Attendance', 'Update:Attendance',
-            'ViewAny:Leave', 'View:Leave', 'Approve:Leave',
-            'View:PaySlip', 'Download:PaySlip',
-            'View:Reports',
-            'ViewAny:Holiday',     'View:Holiday',
-        ]);
-
-        // EMPLOYEE — self service only
-        $employee = Role::firstOrCreate(['name' => 'employee']);
-        $employee->syncPermissions([
-            'View:PaySlip',
-            'Download:PaySlip',
-            'View:Attendance',
-            'View:Leave',
-            'Create:Leave',
-            'View:Holiday',
-        ]);
+        // employee
+        $employee->syncPermissions(
+            Permission::whereIn('name', [
+                'View:PaySlip',
+                'View:Attendance',
+                'ViewAny:Leave',
+                'View:Leave',
+                'Create:Leave',
+                'ViewAny:Holiday',
+                'View:Holiday',
+            ])->get()
+        );
     }
 }

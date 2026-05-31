@@ -23,7 +23,7 @@ class AttendanceResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'People';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-calendar-days';
 
     protected static ?int $navigationSort  = 2;
 

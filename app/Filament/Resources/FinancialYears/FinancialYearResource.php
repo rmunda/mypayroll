@@ -20,7 +20,7 @@ class FinancialYearResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Reports & Settings';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDateRange;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-calendar-cog';
 
     protected static ?int $navigationSort  = 1;
 

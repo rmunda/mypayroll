@@ -21,7 +21,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesAndPermissionsSeeder::class,
             DefaultDataSeeder::class,
+            WeeklyOffRuleSeeder::class,
             FinancialYearAndHolidaySeeder::class, 
+            LeaveTypeSeeder::class,
+            LeavePolicySeeder::class,
         ]);
     }
 }

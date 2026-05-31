@@ -20,7 +20,7 @@ class DeductionRuleResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Compliance';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-calculator';
 
     protected static ?int $navigationSort = 1;
 

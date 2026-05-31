@@ -20,7 +20,7 @@ class UserResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'User Management';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserPlus;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-user-plus';
 
     protected static ?int $navigationSort = 1;
 

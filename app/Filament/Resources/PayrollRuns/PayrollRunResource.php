@@ -23,7 +23,7 @@ class PayrollRunResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Payroll';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCurrencyRupee;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-receipt-indian-rupee';
 
     protected static ?int $navigationSort = 1;
 

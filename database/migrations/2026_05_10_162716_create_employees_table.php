@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('weekly_off_rule_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
             $table->string('employee_code')->unique();
             $table->string('name');
             $table->string('email')->unique();

@@ -26,7 +26,7 @@ class HolidayResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Holidays';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSun;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-sun';
 
     protected static ?int $navigationSort  = 2;
 
