@@ -12,6 +12,8 @@ use Filament\Tables\Table;
 use App\Models\Leave;
 use Filament\Notifications\Notification;
 
+use App\Services\LeaveBalanceService;
+
 class LeavesTable
 {
     public static function configure(Table $table): Table
@@ -56,9 +58,11 @@ class LeavesTable
                         && $record->status === 'request'
                     )
                     ->requiresConfirmation()
-                    ->action(fn(Leave $record) =>
-                        $record->update(['status' => 'cancelled'])
-                    ),
+                    ->action(function (Leave $record) {
+                        $record->update(['status' => 'cancelled']);
+                        // Call service to update leaves
+                        app(LeaveBalanceService::class)->onLeaveCancelled($record);
+                    }),
                 
                 // ADMIN / HR / MANAGER — acknowledge
                 Action::make('acknowledge')
@@ -93,6 +97,8 @@ class LeavesTable
                             'approved_by' => auth()->id(),
                             'approved_at' => now(),
                         ]);
+                        // Call service to update leaves
+                        app(LeaveBalanceService::class)->onLeaveApproved($record);
                         Notification::make()
                             ->title('Leave approved')
                             ->success()
@@ -110,6 +116,8 @@ class LeavesTable
                     ->requiresConfirmation()
                     ->action(function (Leave $record) {
                         $record->update(['status' => 'rejected']);
+                        // Call service to update leaves
+                        app(LeaveBalanceService::class)->onLeaveCancelled($record);
                         Notification::make()
                             ->title('Leave rejected')
                             ->danger()

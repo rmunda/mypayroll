@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use App\Models\Employee;
 use App\Models\Holiday;
+use App\Models\LeaveType;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -92,9 +93,11 @@ class LeaveForm
                         }
                         // hr, admin, manager see operational statuses
                         return [
+                            'request'   => 'Request',
                             'pending'  => 'Pending (under review)',
                             'approved' => 'Approved',
                             'rejected' => 'Rejected',
+                            'cancelled' => 'Cancel request',
                         ];
                     })
                     ->default(function () {
