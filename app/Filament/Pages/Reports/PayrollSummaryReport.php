@@ -9,6 +9,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Support\Icons\Heroicon;
 
@@ -16,15 +17,15 @@ class PayrollSummaryReport extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationGroup = 'Reports';
+    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
 
     protected static ?string $navigationLabel = 'Payroll Summary';
 
-    protected static ?string $navigationIcon = 'lucide-file-bar-chart';
+    protected static string|\BackedEnum|null $navigationIcon = 'lucide-file-bar-chart';
 
     protected static ?int $navigationSort = 1;
 
-    protected static string $view = 'filament.pages.reports.payroll-summary-report';
+    protected string $view = 'filament.pages.reports.payroll-summary-report';
 
     public static function canAccess(): bool
     {

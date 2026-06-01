@@ -12,6 +12,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -19,15 +20,15 @@ class AttendanceReport extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationGroup = 'Reports';
+    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
 
     protected static ?string $navigationLabel = 'Attendance Report';
 
-    protected static ?string $navigationIcon = 'lucide-clock';
+    protected static string|\BackedEnum|null $navigationIcon = 'lucide-clock';
 
     protected static ?int $navigationSort = 4;
 
-    protected static string $view = 'filament.pages.reports.attendance-report';
+    protected string $view = 'filament.pages.reports.attendance-report';
 
     public static function canAccess(): bool
     {

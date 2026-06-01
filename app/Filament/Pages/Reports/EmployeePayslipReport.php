@@ -12,21 +12,22 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use BackedEnum;
 use Filament\Actions\Action;
 
 class EmployeePayslipReport extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationGroup = 'Reports';
+    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
 
     protected static ?string $navigationLabel = 'Employee Payslips';
 
-    protected static ?string $navigationIcon = 'lucide-receipt-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'lucide-receipt-text';
 
     protected static ?int $navigationSort = 2;
 
-    protected static string $view = 'filament.pages.reports.employee-payslip-report';
+    protected string $view = 'filament.pages.reports.employee-payslip-report';
 
     public static function canAccess(): bool
     {

@@ -21,7 +21,7 @@ class DepartmentResource extends Resource
     // Add this lines here:
     protected static string|\UnitEnum|null $navigationGroup = 'People';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
+    protected static string|BackedEnum|null $navigationIcon = 'lucide-building-2';
 
     protected static ?int $navigationSort  = 4;
 

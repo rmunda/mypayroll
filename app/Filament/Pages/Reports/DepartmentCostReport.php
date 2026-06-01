@@ -11,6 +11,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use BackedEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -18,15 +19,15 @@ class DepartmentCostReport extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationGroup = 'Reports';
+    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
 
     protected static ?string $navigationLabel = 'Department Cost';
 
-    protected static ?string $navigationIcon = 'lucide-building-2';
+    protected static string|\BackedEnum|null $navigationIcon = 'lucide-building-2';
 
     protected static ?int $navigationSort = 6;
 
-    protected static string $view = 'filament.pages.reports.department-cost-report';
+    protected string $view = 'filament.pages.reports.department-cost-report';
 
     public static function canAccess(): bool
     {

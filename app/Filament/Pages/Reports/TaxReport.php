@@ -14,21 +14,22 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use BackedEnum;
 use Illuminate\Database\Eloquent\Builder;
 
 class TaxReport extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationGroup = 'Reports';
+    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
 
     protected static ?string $navigationLabel = 'Tax / TDS Report';
 
-    protected static ?string $navigationIcon = 'lucide-landmark';
+    protected static string|\BackedEnum|null $navigationIcon = 'lucide-landmark';
 
     protected static ?int $navigationSort = 5;
 
-    protected static string $view = 'filament.pages.reports.tax-report';
+    protected string $view = 'filament.pages.reports.tax-report';
 
     public static function canAccess(): bool
     {

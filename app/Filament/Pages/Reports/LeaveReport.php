@@ -13,6 +13,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -20,15 +21,15 @@ class LeaveReport extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationGroup = 'Reports';
+    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
 
     protected static ?string $navigationLabel = 'Leave Report';
 
-    protected static ?string $navigationIcon = 'lucide-calendar-x';
+    protected static string|\BackedEnum|null $navigationIcon = 'lucide-calendar-x';
 
     protected static ?int $navigationSort = 3;
 
-    protected static string $view = 'filament.pages.reports.leave-report';
+    protected string $view = 'filament.pages.reports.leave-report';
 
     public static function canAccess(): bool
     {
