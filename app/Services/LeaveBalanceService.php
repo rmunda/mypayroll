@@ -53,7 +53,13 @@ class LeaveBalanceService
     // -------------------------------------------
     public function accrueMonthlyEarnedLeave(): void
     {
-        $fy     = FinancialYear::current();
+        $fy = FinancialYear::current();
+
+        if (!$fy) {
+            \Illuminate\Support\Facades\Log::error('No current FY found — skipping monthly leave accrual');
+            return;
+        }
+
         $policy = LeavePolicy::where('financial_year_id', $fy->id)
                     ->where('is_default', true)
                     ->first();

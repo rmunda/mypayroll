@@ -33,9 +33,9 @@ class FinancialYear extends Model
     }
 
     // helpers
-    public static function current(): self
+    public static function current(): ?self
     {
-        return static::where('is_current', true)->firstOrFail();
+        return static::where('is_current', true)->first();
     }
 
     public static function forDate(Carbon $date): ?self
