@@ -12,6 +12,7 @@ use Filament\Schemas\Schema;
 
 use App\Models\PayStructure;
 use App\Models\Department;
+use App\Models\WeeklyOffRule;
 
 
 
@@ -66,6 +67,14 @@ class EmployeeForm
                                 PayStructure::pluck('name', 'id')
                             )
                             ->required(),
+
+                        Select::make('weekly_off_rule_id')
+                            ->label('Weekly off rule')
+                            ->options(
+                                WeeklyOffRule::pluck('name', 'id')
+                            )
+                            ->searchable()
+                            ->placeholder('Uses default rule if not set'),
 
                         DatePicker::make('date_of_joining')
                             ->required(),

@@ -7,6 +7,7 @@ use App\Models\PaySlip;
 use App\Models\DeductionRule;
 use App\Models\Attendance;
 use App\Models\Holiday;
+use App\Models\WeeklyOffRule;
 use Carbon\Carbon;
 
 class PayrollService
@@ -17,11 +18,17 @@ class PayrollService
     {
         $run->update(['status' => 'processing', 'processed_by' => auth()->id()]);
 
-        $employees      = Employee::where('status','active')->with('payStructure')->get();
+        $employees      = Employee::where('status','active')->with('payStructure','weeklyOffRule')->get();
         $deductionRules = DeductionRule::where('is_active',true)->get();
-        $workingDays    = $this->getWorkingDays($run->period_start, $run->period_end);
+        $defaultRule    = WeeklyOffRule::where('is_default', true)->first();
+        $holidays       = Holiday::forPeriod($run->period_start, $run->period_end)
+                            ->pluck('date')
+                            ->map(fn($d) => $d->format('Y-m-d'))
+                            ->toArray();
 
         foreach ($employees as $employee) {
+            $rule        = $employee->weeklyOffRule ?? $defaultRule;
+            $workingDays = $this->getWorkingDays($run->period_start, $run->period_end, $rule, $holidays);
             $this->calculatePaySlip($run, $employee, $deductionRules, $workingDays);
         }
 
@@ -102,19 +109,14 @@ class PayrollService
         );
     }
 
-    protected function getWorkingDays(Carbon $start, Carbon $end): int
+    protected function getWorkingDays(Carbon $start, Carbon $end, ?WeeklyOffRule $rule, array $holidays): int
     {
-        // Get all holidays in this period
-        $holidays = Holiday::forPeriod($start, $end)
-                    ->pluck('date')
-                    ->map(fn($d) => $d->format('Y-m-d'))
-                    ->toArray(); 
-
         $days = 0;
         $cur  = $start->copy();
         while ($cur->lte($end)) {
-            // Skip weekends AND holidays
-            if (!$cur->isWeekend() && !in_array($cur->format('Y-m-d'), $holidays)) $days++;
+            // Skip non-working days (per employee's weekly off rule) AND holidays
+            $isWorking = $rule ? $rule->isWorkingDay($cur) : !$cur->isWeekend();
+            if ($isWorking && !in_array($cur->format('Y-m-d'), $holidays)) $days++;
             $cur->addDay();
         }
         return $days;

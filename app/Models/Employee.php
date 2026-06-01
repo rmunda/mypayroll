@@ -14,7 +14,7 @@ class Employee extends Model
 
     protected $fillable = [
         'employee_code','name','email','phone',
-        'department_id','pay_structure_id','designation',
+        'department_id','pay_structure_id','weekly_off_rule_id','designation',
         'basic_salary','pay_frequency','bank_name','bank_account',
         'ifsc_code','pan_number','uan_number','esic_number',
         'date_of_joining','date_of_leaving','status','tax_regime','user_id',
@@ -26,12 +26,13 @@ class Employee extends Model
         'basic_salary'    => 'decimal:2',
     ];
 
-    public function department()   { return $this->belongsTo(Department::class); }
-    public function payStructure() { return $this->belongsTo(PayStructure::class); }
-    public function paySlips()     { return $this->hasMany(PaySlip::class); }
-    public function attendance()   { return $this->hasMany(Attendance::class); }
-    public function leaves()       { return $this->hasMany(Leave::class); }
-    public function user()         { return $this->belongsTo(User::class); }
+    public function department()    { return $this->belongsTo(Department::class); }
+    public function payStructure()  { return $this->belongsTo(PayStructure::class); }
+    public function weeklyOffRule() { return $this->belongsTo(WeeklyOffRule::class); }
+    public function paySlips()      { return $this->hasMany(PaySlip::class); }
+    public function attendance()    { return $this->hasMany(Attendance::class); }
+    public function leaves()        { return $this->hasMany(Leave::class); }
+    public function user()          { return $this->belongsTo(User::class); }
 
     // Computed HRA
     public function getHraAttribute(): float

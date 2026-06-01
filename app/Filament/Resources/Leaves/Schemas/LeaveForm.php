@@ -113,21 +113,25 @@ class LeaveForm
 
     protected static function calculateDays(Get $get, Set $set): void
     {
-        // Needs update on change in company leave and holiday policy
         $from = $get('from_date');
-        $to = $get('to_date');
+        $to   = $get('to_date');
 
         if ($from && $to) {
 
-            $start = Carbon::parse($from)->copy();
-            $end = Carbon::parse($to);
+            // get employee's weekly off rule, fall back to default rule
+            $employee = Employee::with('weeklyOffRule')->find($get('employee_id'));
+            $rule     = $employee?->weeklyOffRule
+                        ?? \App\Models\WeeklyOffRule::where('is_default', true)->first();
 
-            $days = 0;
+            $start = Carbon::parse($from)->copy();
+            $end   = Carbon::parse($to);
+            $days  = 0;
 
             while ($start->lte($end)) {
 
-                // Skip weekends
-                if ($start->isWeekend()) {
+                // Skip non-working days per employee's weekly off rule
+                $isWorking = $rule ? $rule->isWorkingDay($start) : !$start->isWeekend();
+                if (!$isWorking) {
                     $start->addDay();
                     continue;
                 }
@@ -139,7 +143,6 @@ class LeaveForm
                 }
 
                 $days++;
-
                 $start->addDay();
             }
 
