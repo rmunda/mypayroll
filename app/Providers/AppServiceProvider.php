@@ -14,7 +14,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\TaxService::class);
+        $this->app->singleton(\App\Services\PayrollService::class);
+        $this->app->singleton(\App\Services\PdfService::class);
+        $this->app->singleton(\App\Services\LeaveBalanceService::class);
     }
 
     /**
@@ -24,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Added afterwards
 
-        // 1.
+        // Override some policy for employee
         Gate::before(function ($user, string $ability) {
 
             $allowedFallbacks = [
