@@ -18,7 +18,7 @@ class WeeklyOffRuleResource extends Resource
 {
     protected static ?string $model = WeeklyOffRule::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Leave Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
 
     protected static string|BackedEnum|null $navigationIcon = 'lucide-notebook';
 

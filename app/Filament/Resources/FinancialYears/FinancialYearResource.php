@@ -18,7 +18,7 @@ class FinancialYearResource extends Resource
 {
     protected static ?string $model = FinancialYear::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Reports & Settings';
+    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
 
     protected static string|BackedEnum|null $navigationIcon = 'lucide-calendar-cog';
 

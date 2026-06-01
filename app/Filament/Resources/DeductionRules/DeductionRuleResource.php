@@ -18,7 +18,7 @@ class DeductionRuleResource extends Resource
 {
     protected static ?string $model = DeductionRule::class;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Compliance';
+    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
 
     protected static string|BackedEnum|null $navigationIcon = 'lucide-calculator';
 

@@ -92,8 +92,8 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('People'),
                 NavigationGroup::make('Payroll'),
                 NavigationGroup::make('Leave Management'),
-                NavigationGroup::make('Compliance'),
-                NavigationGroup::make('Reports & Settings'),
+                NavigationGroup::make('Reports'),
+                NavigationGroup::make('Settings'),
             ])
 
             // ADD: register third-party plugins (install packages first)
