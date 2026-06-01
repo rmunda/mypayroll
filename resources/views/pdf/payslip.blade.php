@@ -22,12 +22,27 @@
 <body>
 
 <div class="header">
-  <div>
-    <div class="brand">PayrollPro</div>
-    <div class="sub">Pay Slip &mdash; {{ $slip->payrollRun->period_label }}</div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    @if($company->logo)
+      <img src="{{ Storage::disk('public')->path($company->logo) }}" style="height:48px;width:auto;object-fit:contain;">
+    @endif
+    <div>
+      <div class="brand">{{ $company->company_name }}</div>
+      @if($company->tagline)
+        <div class="sub">{{ $company->tagline }}</div>
+      @endif
+      @if($company->city || $company->state)
+        <div style="font-size:10px;opacity:.8;margin-top:2px;">
+          {{ implode(', ', array_filter([$company->city, $company->state, $company->pincode])) }}
+        </div>
+      @endif
+    </div>
   </div>
-  <div style="text-align:right;font-size:11px;opacity:.85;">
-    Generated: {{ now()->format('d M Y') }}
+  <div style="text-align:right;font-size:10px;opacity:.85;">
+    <div style="font-size:12px;font-weight:bold;margin-bottom:4px;">Pay Slip &mdash; {{ $slip->payrollRun->period_label }}</div>
+    @if($company->gstin)<div>GSTIN: {{ $company->gstin }}</div>@endif
+    @if($company->pan)<div>PAN: {{ $company->pan }}</div>@endif
+    <div>Generated: {{ now()->format('d M Y') }}</div>
   </div>
 </div>
 
@@ -69,7 +84,11 @@
 </div>
 
 <div class="net">Net Pay: INR {{ number_format($slip->net_pay,2) }}</div>
-<div class="foot">Computer-generated pay slip &mdash; no signature required. PayrollPro</div>
+<div class="foot">
+  Computer-generated pay slip &mdash; no signature required &mdash; {{ $company->company_name }}
+  @if($company->address_line1) &mdash; {{ implode(', ', array_filter([$company->address_line1, $company->address_line2, $company->city, $company->state, $company->pincode])) }}@endif
+  @if($company->phone) &mdash; {{ $company->phone }}@endif
+</div>
 
 </body>
 </html>
