@@ -24,7 +24,8 @@ class LeavesTable
                 TextColumn::make('employee.name')
                     ->searchable(),
 
-                TextColumn::make('type')
+                TextColumn::make('leaveType.name')
+                    ->label('Leave Type')
                     ->badge()
                     ->color('info'),
 
