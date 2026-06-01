@@ -7,6 +7,9 @@ use App\Models\Employee;
 use App\Models\FinancialYear;
 use App\Models\LeaveBalance;
 use App\Models\LeavePolicy;
+use App\Models\LeavePolicyDetail;
+use App\Models\LeaveTransaction;
+use App\Models\LeaveType;
 use App\Models\Leave;
 
 class LeaveBalanceService
