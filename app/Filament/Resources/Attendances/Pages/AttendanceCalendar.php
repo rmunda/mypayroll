@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Attendances\Pages;
 use App\Filament\Resources\Attendances\AttendanceResource;
 use App\Filament\Widgets\AttendanceCalendarWidget;
 use Filament\Resources\Pages\Page;
+use App\Filament\Widgets\AttendanceStatsWidget;
 
 use Filament\Actions\Action;
 
@@ -30,6 +31,7 @@ class AttendanceCalendar extends Page
     protected function getHeaderWidgets(): array
     {
         return [
+            AttendanceStatsWidget::class,
             AttendanceCalendarWidget::class,
         ];
     }
