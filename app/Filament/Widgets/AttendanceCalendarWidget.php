@@ -28,7 +28,7 @@ class AttendanceCalendarWidget extends FullCalendarWidget
 {
     protected int | string | array $columnSpan = 'full';
 
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 2;
 
     public Model | string | null $model = Attendance::class;
 
