@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Leaves\Pages;
 
-use App\Filament\Resources\LeaveResource;
+use App\Filament\Resources\Leaves\LeaveResource;
 use App\Services\LeaveBalanceService;
 use Filament\Resources\Pages\CreateRecord;
 
