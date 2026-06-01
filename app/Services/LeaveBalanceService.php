@@ -24,23 +24,23 @@ class LeaveBalanceService
                         ->where('is_default', true)
                         ->firstOrFail();
 
-        $employees = Employee::where('status', 'active')->get();
-        $types     = ['casual', 'sick', 'earned', 'maternity', 'unpaid'];
+        $employees  = Employee::where('status', 'active')->get();
+        $leaveTypes = LeaveType::where('is_active', true)->get();
 
         foreach ($employees as $employee) {
-            foreach ($types as $type) {
+            foreach ($leaveTypes as $leaveType) {
                 LeaveBalance::firstOrCreate(
                     [
                         'employee_id'       => $employee->id,
                         'financial_year_id' => $fy->id,
-                        'leave_type'        => $type,
+                        'leave_type_id'     => $leaveType->id,
                     ],
                     [
-                        'allocated'        => $policy->getAllocation($type),
+                        'allocated'        => $policy->getAllocationForType($leaveType->id),
                         'accrued'          => 0,
                         'used'             => 0,
                         'pending'          => 0,
-                        'carried_forward'  => $this->getCarryForward($employee, $fy, $type),
+                        'carried_forward'  => $this->getCarryForward($employee, $fy, $leaveType),
                     ]
                 );
             }
@@ -60,19 +60,29 @@ class LeaveBalanceService
 
         if (!$policy || !$policy->earned_leave_accrual) return;
 
+        // get all leave types that have accrual configured in the policy
+        $accruingDetails = $policy->policyDetails()
+                            ->where('accrual_per_month', '>', 0)
+                            ->with('leaveType')
+                            ->get();
+
+        if ($accruingDetails->isEmpty()) return;
+
         $employees = Employee::where('status', 'active')->get();
 
         foreach ($employees as $employee) {
-            $balance = LeaveBalance::firstOrCreate(
-                [
-                    'employee_id'       => $employee->id,
-                    'financial_year_id' => $fy->id,
-                    'leave_type'        => 'earned',
-                ],
-                ['allocated' => 0, 'accrued' => 0, 'used' => 0, 'pending' => 0]
-            );
+            foreach ($accruingDetails as $detail) {
+                $balance = LeaveBalance::firstOrCreate(
+                    [
+                        'employee_id'       => $employee->id,
+                        'financial_year_id' => $fy->id,
+                        'leave_type_id'     => $detail->leave_type_id,
+                    ],
+                    ['allocated' => 0, 'accrued' => 0, 'used' => 0, 'pending' => 0]
+                );
 
-            $balance->increment('accrued', $policy->earned_accrual_per_month);
+                $balance->increment('accrued', $detail->accrual_per_month);
+            }
         }
     }
 
@@ -127,15 +137,13 @@ class LeaveBalanceService
     // -------------------------------------------
     // Carry forward earned leave to next year
     // -------------------------------------------
-    private function getCarryForward(Employee $employee, FinancialYear $newFy, string $type): float
+    private function getCarryForward(Employee $employee, FinancialYear $newFy, LeaveType $leaveType): float
     {
-        if ($type !== 'earned') return 0;
-
         $policy = LeavePolicy::where('financial_year_id', $newFy->id)
                     ->where('is_default', true)
                     ->first();
 
-        if (!$policy || !$policy->carry_forward_earned) return 0;
+        if (!$policy || !$policy->allowsCarryForward($leaveType->id)) return 0;
 
         // get previous FY balance
         $prevFy = FinancialYear::where('end_date', '<', $newFy->start_date)
@@ -146,7 +154,7 @@ class LeaveBalanceService
 
         $prevBalance = LeaveBalance::where('employee_id', $employee->id)
                         ->where('financial_year_id', $prevFy->id)
-                        ->where('leave_type', 'earned')
+                        ->where('leave_type_id', $leaveType->id)
                         ->first();
 
         if (!$prevBalance) return 0;
@@ -154,7 +162,7 @@ class LeaveBalanceService
         // carry forward available balance up to max limit
         return min(
             $prevBalance->available,
-            $policy->max_carry_forward_days
+            $policy->getMaxCarryForward($leaveType->id)
         );
     }
 
