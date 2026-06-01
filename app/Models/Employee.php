@@ -3,6 +3,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\User;
+use App\Services\LeaveBalanceService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMail;
 
 class Employee extends Model
 {
@@ -54,7 +58,7 @@ class Employee extends Model
 
         // Auto create User account when Employee is created
         static::created(function (Employee $e) {
-            $user = \App\Models\User::firstOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $e->email],
                 [
                     'name'      => $e->name,
@@ -67,7 +71,15 @@ class Employee extends Model
             $user->assignRole('employee');
 
             // link user to employee
-            $e->update(['user_id' => $user->id]);
+             $e->updateQuietly(['user_id' => $user->id]);
+
+            // initialize leave balances for new employee
+            app(LeaveBalanceService::class)
+                ->initializeForEmployee($e);
+
+            // send welcome email
+            Mail::to($e->email)
+                ->send(new WelcomeMail($e, 'Welcome@123'));
         });
     }
 

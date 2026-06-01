@@ -154,4 +154,65 @@ class LeaveBalanceService
             $policy->max_carry_forward_days
         );
     }
+
+    // initialize balances for a single employee
+    // called when new employee is onboarded mid year
+    public function initializeForEmployee(Employee $employee): void
+    {
+        $fy = FinancialYear::current();
+        if (!$fy) return;
+
+        $policy = LeavePolicy::where('financial_year_id', $fy->id)
+                    ->where('is_default', true)
+                    ->first();
+
+        if (!$policy) return;
+
+        $leaveTypes = LeaveType::where('is_active', true)->get();
+
+        // calculate how many months are remaining in the FY
+        $monthsRemaining = now()->diffInMonths($fy->end_date) + 1;
+
+        foreach ($leaveTypes as $leaveType) {
+            $detail = LeavePolicyDetail::where('leave_policy_id', $policy->id)
+                        ->where('leave_type_id', $leaveType->id)
+                        ->first();
+
+            if (!$detail) continue;
+
+            // pro-rate leave based on months remaining
+            // e.g. joined in October = 6 months remaining in FY
+            // casual leave = 12 days / 12 months * 6 = 6 days
+            $proRatedDays = $detail->effectiveDaysForMonths($monthsRemaining);
+
+            $balance = LeaveBalance::firstOrCreate(
+                [
+                    'employee_id'       => $employee->id,
+                    'financial_year_id' => $fy->id,
+                    'leave_type_id'     => $leaveType->id,
+                ],
+                [
+                    'allocated'       => $proRatedDays,
+                    'accrued'         => 0,
+                    'used'            => 0,
+                    'pending'         => 0,
+                    'carried_forward' => 0,
+                    'encashed'        => 0,
+                    'lapsed'          => 0,
+                ]
+            );
+
+            // log allocation
+            if ($balance->wasRecentlyCreated && $proRatedDays > 0) {
+                LeaveTransaction::record(
+                    balance:         $balance,
+                    transactionType: 'allocated',
+                    days:            $proRatedDays,
+                    balanceBefore:   0,
+                    leaveId:         null,
+                    remarks:         'Pro-rated allocation — joined ' . now()->format('d M Y')
+                );
+            }
+        }
+    }
 }
