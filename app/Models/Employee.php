@@ -26,13 +26,15 @@ class Employee extends Model
         'basic_salary'    => 'decimal:2',
     ];
 
-    public function department()    { return $this->belongsTo(Department::class); }
-    public function payStructure()  { return $this->belongsTo(PayStructure::class); }
-    public function weeklyOffRule() { return $this->belongsTo(WeeklyOffRule::class); }
-    public function paySlips()      { return $this->hasMany(PaySlip::class); }
-    public function attendance()    { return $this->hasMany(Attendance::class); }
-    public function leaves()        { return $this->hasMany(Leave::class); }
-    public function user()          { return $this->belongsTo(User::class); }
+    public function department()       { return $this->belongsTo(Department::class); }
+    public function payStructure()     { return $this->belongsTo(PayStructure::class); }
+    public function weeklyOffRule()    { return $this->belongsTo(WeeklyOffRule::class); }
+    public function paySlips()         { return $this->hasMany(PaySlip::class); }
+    public function attendance()       { return $this->hasMany(Attendance::class); }
+    public function leaves()           { return $this->hasMany(Leave::class); }
+    public function leaveBalances()    { return $this->hasMany(LeaveBalance::class); }
+    public function leaveTransactions(){ return $this->hasMany(LeaveTransaction::class); }
+    public function user()             { return $this->belongsTo(User::class); }
 
     // Computed HRA
     public function getHraAttribute(): float
