@@ -17,8 +17,22 @@ class RolesAndPermissionsSeeder extends Seeder
         $manager  = Role::firstOrCreate(['name' => 'manager',  'guard_name' => 'web']);
         $employee = Role::firstOrCreate(['name' => 'employee', 'guard_name' => 'web']);
 
-        // admin gets everything
-        $admin->syncPermissions(Permission::all());
+        // Normal admin gets everything except role and permissions
+        $admin->syncPermissions(
+            Permission::whereNotIn('name', [
+                'ViewAny:Role',
+                'View:Role',
+                'Create:Role',
+                'Update:Role',
+                'Delete:Role',
+
+                'ViewAny:Permission',
+                'View:Permission',
+                'Create:Permission',
+                'Update:Permission',
+                'Delete:Permission',
+            ])->get()
+        );
 
         // hr
         $hr->syncPermissions(
