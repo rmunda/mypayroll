@@ -42,33 +42,72 @@ class AttendanceCalendar extends Page
                 ->modalDescription('Creates attendance records for all active employees. Existing records for the selected date will not be overwritten.')
                 ->modalSubmitActionLabel('Mark All Present')
                 ->action(function (array $data) {
-                    $date      = $data['date'];
-                    $employees = Employee::where('status', 'active')->pluck('id');
+                    $date    = $data['date'];
+                    $carbon  = Carbon::parse($date);
 
-                    // get employees who already have a record for this date
+                    // one query — check if public holiday for all
+                    $isHoliday   = Holiday::isHoliday($carbon);
+                    $defaultRule = WeeklyOffRule::where('is_default', true)->first();
+
+                    // load active employees with their weekly off rule
+                    $employees = Employee::where('status', 'active')
+                                    ->with('weeklyOffRule')
+                                    ->get();
+
+                    // load approved leaves covering this date (one query)
+                    $onLeaveIds = Leave::where('status', 'approved')
+                                    ->whereDate('from_date', '<=', $date)
+                                    ->whereDate('to_date', '>=', $date)
+                                    ->pluck('employee_id')
+                                    ->toArray();
+
+                    // employees already having a record for this date
                     $existing = Attendance::whereDate('date', $date)
-                        ->whereIn('employee_id', $employees)
-                        ->pluck('employee_id')
-                        ->toArray();
+                                    ->whereIn('employee_id', $employees->pluck('id'))
+                                    ->pluck('employee_id')
+                                    ->toArray();
 
-                    // only create for employees without a record
-                    $toCreate = $employees->reject(fn ($id) => in_array($id, $existing));
+                    $skipped = 0;
+                    $counts  = ['present' => 0, 'holiday' => 0, 'weekend' => 0, 'on_leave' => 0];
 
-                    $created = 0;
-                    foreach ($toCreate as $employeeId) {
+                    foreach ($employees as $employee) {
+
+                        // skip if record already exists
+                        if (in_array($employee->id, $existing)) {
+                            $skipped++;
+                            continue;
+                        }
+
+                        // determine status in priority order
+                        $rule = $employee->weeklyOffRule ?? $defaultRule;
+
+                        $status = match (true) {
+                            $isHoliday                              => 'holiday',
+                            $rule && !$rule->isWorkingDay($carbon)  => 'weekend',
+                            in_array($employee->id, $onLeaveIds)    => 'on_leave',
+                            default                                 => 'present',
+                        };
+
                         Attendance::create([
-                            'employee_id' => $employeeId,
+                            'employee_id' => $employee->id,
                             'date'        => $date,
-                            'status'      => 'present',
+                            'status'      => $status,
                         ]);
-                        $created++;
+
+                        $counts[$status]++;
                     }
 
-                    $skipped = count($existing);
+                    // build summary message
+                    $parts = [];
+                    if ($counts['present'])  $parts[] = "{$counts['present']} present";
+                    if ($counts['on_leave']) $parts[] = "{$counts['on_leave']} on leave";
+                    if ($counts['holiday'])  $parts[] = "{$counts['holiday']} holiday";
+                    if ($counts['weekend'])  $parts[] = "{$counts['weekend']} weekend";
+                    if ($skipped)            $parts[] = "{$skipped} skipped (already existed)";
 
                     Notification::make()
                         ->title('Daily attendance created')
-                        ->body("{$created} marked present" . ($skipped > 0 ? ", {$skipped} already had records (skipped)." : '.'))
+                        ->body(implode(', ', $parts) . '.')
                         ->success()
                         ->send();
                 }),
