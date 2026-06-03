@@ -19,14 +19,23 @@ class UserForm
                 TextInput::make('email')
                     ->label('Email address')
                     ->email()
-                    ->required(),
+                    ->required()
+                    ->unique(ignoreRecord: true),
                 TextInput::make('avatar'),
                 Toggle::make('is_active')
                     ->required(),
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
-                    ->required(),
+                    ->required(fn (string $operation) => $operation === 'create')
+                    ->default('password@123')
+                    ->dehydrated(fn ($state) => filled($state))
+                    ->helperText(
+                        fn (string $operation) =>
+                            $operation === 'create'
+                                ? 'Default password is password@123.'
+                                : 'Leave blank to keep current password.'
+                    ),
                 Select::make('roles')
                     ->multiple()
                     ->relationship('roles', 'name')
