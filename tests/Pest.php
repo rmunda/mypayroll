@@ -14,8 +14,10 @@ use Tests\TestCase;
 |
 */
 
-pest()->extend(TestCase::class)
-    ->use(RefreshDatabase::class)
+uses(TestCase::class, RefreshDatabase::class)
+    ->beforeEach(function () {
+        $this->seed(\Database\Seeders\TestSeeder::class);
+    })
     ->in('Feature', 'Unit');
 
 /*
