@@ -2,9 +2,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaySlip extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'payroll_run_id','employee_id','working_days','present_days','leave_days','absent_days',
         'basic','hra','transport_allowance','special_allowance','bonus','arrears','gross_earnings',

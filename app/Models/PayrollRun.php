@@ -2,9 +2,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PayrollRun extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'period_label','period_start','period_end','status',
         'total_gross','total_deductions','total_net','processed_by','approved_at','paid_at',
