@@ -1,7 +1,5 @@
 <?php
 
-test('sanity check', fn () => expect(true)->toBeTrue());
-
 use App\Models\Employee;
 use App\Models\FinancialYear;
 use App\Models\Leave;

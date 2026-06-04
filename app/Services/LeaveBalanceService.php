@@ -117,8 +117,7 @@ class LeaveBalanceService
         LeaveBalance::where('employee_id', $leave->employee_id)
             ->where('financial_year_id', $fy->id)
             ->where('leave_type_id', $leave->leave_type_id)
-            ->first()
-            ?->update([
+            ->update([
                 'pending' => \DB::raw("GREATEST(pending - {$leave->days}, 0)"),
                 'used'    => \DB::raw("used + {$leave->days}"),
             ]);
