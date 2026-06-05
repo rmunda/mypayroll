@@ -32,9 +32,6 @@ return new class extends Migration
             $table->decimal('max_carry_forward_days', 5, 1)->default(30);
 
             $table->timestamps();
-
-            // only one default policy per financial year
-            $table->unique(['financial_year_id', 'is_default']);
         });
     }
 
