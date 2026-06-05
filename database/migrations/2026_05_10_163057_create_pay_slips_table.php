@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('payroll_run_id')->constrained()->cascadeOnDelete();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->integer('working_days')->default(0);
-            $table->integer('present_days')->default(0);
+            $table->decimal('present_days', 5, 1)->default(0);
             $table->integer('leave_days')->default(0);
-            $table->integer('absent_days')->default(0);
+            $table->decimal('absent_days', 5, 1)->default(0);
             // Earnings
             $table->decimal('basic', 12, 2)->default(0);
             $table->decimal('hra', 12, 2)->default(0);
