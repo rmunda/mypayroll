@@ -281,3 +281,276 @@ describe('initializeForEmployee', function () {
     });
 
 });
+
+// ─────────────────────────────────────────────────────────────
+// accrueMonthlyEarnedLeave
+// ─────────────────────────────────────────────────────────────
+
+describe('accrueMonthlyEarnedLeave', function () {
+
+    it('increments accrued for each active employee when accrual is configured', function () {
+        $fy     = FinancialYear::factory()->current()->create();
+        $policy = LeavePolicy::factory()->for($fy)->create(['earned_leave_accrual' => true]);
+        $type   = LeaveType::factory()->earned()->create();
+
+        LeavePolicyDetail::factory()->create([
+            'leave_policy_id'   => $policy->id,
+            'leave_type_id'     => $type->id,
+            'accrual_per_month' => 1.5,
+        ]);
+
+        $employee = Employee::withoutEvents(fn() => Employee::factory()->create());
+        $balance  = LeaveBalance::factory()->create([
+            'employee_id'       => $employee->id,
+            'financial_year_id' => $fy->id,
+            'leave_type_id'     => $type->id,
+            'accrued'           => 0,
+        ]);
+
+        app(LeaveBalanceService::class)->accrueMonthlyEarnedLeave();
+
+        expect((float) $balance->fresh()->accrued)->toEqual(1.5);
+    });
+
+    it('returns early without error when no current financial year exists', function () {
+        expect(fn () => app(LeaveBalanceService::class)->accrueMonthlyEarnedLeave())
+            ->not->toThrow(Exception::class);
+    });
+
+    it('skips accrual when policy has earned_leave_accrual disabled', function () {
+        $fy     = FinancialYear::factory()->current()->create();
+        $policy = LeavePolicy::factory()->for($fy)->create(['earned_leave_accrual' => false]);
+        $type   = LeaveType::factory()->earned()->create();
+
+        LeavePolicyDetail::factory()->create([
+            'leave_policy_id'   => $policy->id,
+            'leave_type_id'     => $type->id,
+            'accrual_per_month' => 1.5,
+        ]);
+
+        $employee = Employee::withoutEvents(fn() => Employee::factory()->create());
+        $balance  = LeaveBalance::factory()->create([
+            'employee_id'       => $employee->id,
+            'financial_year_id' => $fy->id,
+            'leave_type_id'     => $type->id,
+            'accrued'           => 0,
+        ]);
+
+        app(LeaveBalanceService::class)->accrueMonthlyEarnedLeave();
+
+        expect((float) $balance->fresh()->accrued)->toEqual(0.0);
+    });
+
+    it('does not touch balances for leave types with accrual_per_month of zero', function () {
+        $fy     = FinancialYear::factory()->current()->create();
+        $policy = LeavePolicy::factory()->for($fy)->create(['earned_leave_accrual' => true]);
+        $type   = LeaveType::factory()->casual()->create();
+
+        LeavePolicyDetail::factory()->create([
+            'leave_policy_id'   => $policy->id,
+            'leave_type_id'     => $type->id,
+            'accrual_per_month' => 0,
+        ]);
+
+        $employee = Employee::withoutEvents(fn() => Employee::factory()->create());
+        $balance  = LeaveBalance::factory()->create([
+            'employee_id'       => $employee->id,
+            'financial_year_id' => $fy->id,
+            'leave_type_id'     => $type->id,
+            'accrued'           => 0,
+        ]);
+
+        app(LeaveBalanceService::class)->accrueMonthlyEarnedLeave();
+
+        expect((float) $balance->fresh()->accrued)->toEqual(0.0);
+    });
+
+});
+
+// ─────────────────────────────────────────────────────────────
+// initializeForYear
+// ─────────────────────────────────────────────────────────────
+
+describe('initializeForYear', function () {
+
+    it('creates balances for all active employees and leave types', function () {
+        $fy     = FinancialYear::factory()->create();
+        $policy = LeavePolicy::factory()->for($fy)->create();
+        $type1  = LeaveType::factory()->casual()->create();
+        $type2  = LeaveType::factory()->sick()->create();
+
+        LeavePolicyDetail::factory()->create(['leave_policy_id' => $policy->id, 'leave_type_id' => $type1->id, 'days_per_year' => 12]);
+        LeavePolicyDetail::factory()->create(['leave_policy_id' => $policy->id, 'leave_type_id' => $type2->id, 'days_per_year' => 8]);
+
+        Employee::factory()->create();
+        Employee::factory()->create();
+
+        app(LeaveBalanceService::class)->initializeForYear($fy);
+
+        expect(LeaveBalance::where('financial_year_id', $fy->id)->count())->toEqual(4);
+    });
+
+    it('allocates days_per_year from the policy detail', function () {
+        $fy     = FinancialYear::factory()->create();
+        $policy = LeavePolicy::factory()->for($fy)->create();
+        $type   = LeaveType::factory()->casual()->create();
+
+        LeavePolicyDetail::factory()->create([
+            'leave_policy_id' => $policy->id,
+            'leave_type_id'   => $type->id,
+            'days_per_year'   => 15,
+        ]);
+
+        $employee = Employee::factory()->create();
+
+        app(LeaveBalanceService::class)->initializeForYear($fy);
+
+        $balance = LeaveBalance::where('employee_id', $employee->id)
+            ->where('leave_type_id', $type->id)
+            ->first();
+
+        expect((float) $balance->allocated)->toEqual(15.0);
+    });
+
+    it('does not create duplicate balances when called twice', function () {
+        $fy     = FinancialYear::factory()->create();
+        $policy = LeavePolicy::factory()->for($fy)->create();
+        $type   = LeaveType::factory()->casual()->create();
+
+        LeavePolicyDetail::factory()->create([
+            'leave_policy_id' => $policy->id,
+            'leave_type_id'   => $type->id,
+            'days_per_year'   => 12,
+        ]);
+
+        Employee::factory()->create();
+
+        app(LeaveBalanceService::class)->initializeForYear($fy);
+        app(LeaveBalanceService::class)->initializeForYear($fy);
+
+        expect(LeaveBalance::where('financial_year_id', $fy->id)->count())->toEqual(1);
+    });
+
+});
+
+// ─────────────────────────────────────────────────────────────
+// Service guard — no matching financial year for the leave date
+// ─────────────────────────────────────────────────────────────
+
+describe('service guard — no matching financial year', function () {
+
+    it('onLeaveRequested returns silently when no FY covers the leave date', function () {
+        $employee = Employee::factory()->create();
+        $type     = LeaveType::factory()->casual()->create();
+
+        $leave = Leave::factory()->create([
+            'employee_id'   => $employee->id,
+            'leave_type_id' => $type->id,
+            'from_date'     => '2000-01-01',
+            'to_date'       => '2000-01-01',
+            'days'          => 1,
+        ]);
+
+        expect(fn () => app(LeaveBalanceService::class)->onLeaveRequested($leave))
+            ->not->toThrow(Exception::class);
+    });
+
+    it('onLeaveApproved returns silently when no FY covers the leave date', function () {
+        $employee = Employee::factory()->create();
+        $type     = LeaveType::factory()->casual()->create();
+
+        $leave = Leave::factory()->create([
+            'employee_id'   => $employee->id,
+            'leave_type_id' => $type->id,
+            'from_date'     => '2000-01-01',
+            'to_date'       => '2000-01-01',
+            'days'          => 1,
+        ]);
+
+        expect(fn () => app(LeaveBalanceService::class)->onLeaveApproved($leave))
+            ->not->toThrow(Exception::class);
+    });
+
+    it('onLeaveCancelled returns silently when no FY covers the leave date', function () {
+        $employee = Employee::factory()->create();
+        $type     = LeaveType::factory()->casual()->create();
+
+        $leave = Leave::factory()->create([
+            'employee_id'   => $employee->id,
+            'leave_type_id' => $type->id,
+            'from_date'     => '2000-01-01',
+            'to_date'       => '2000-01-01',
+            'days'          => 1,
+        ]);
+
+        expect(fn () => app(LeaveBalanceService::class)->onLeaveCancelled($leave))
+            ->not->toThrow(Exception::class);
+    });
+
+});
+
+// ─────────────────────────────────────────────────────────────
+// LeaveBalance model — additional computed attributes
+// ─────────────────────────────────────────────────────────────
+
+describe('LeaveBalance::totalCredited and totalDebited', function () {
+
+    it('calculates totalCredited as sum of all positive entries', function () {
+        $balance = LeaveBalance::factory()->create([
+            'allocated'       => 12,
+            'accrued'         => 3,
+            'carried_forward' => 2,
+            'used'            => 5,
+            'pending'         => 1,
+        ]);
+
+        expect((float) $balance->totalCredited)->toEqual(17.0);
+    });
+
+    it('calculates totalDebited as sum of all negative entries', function () {
+        $balance = LeaveBalance::factory()->create([
+            'used'     => 5,
+            'pending'  => 1,
+            'encashed' => 2,
+            'lapsed'   => 1,
+        ]);
+
+        expect((float) $balance->totalDebited)->toEqual(9.0);
+    });
+
+});
+
+describe('LeaveBalance::isLow', function () {
+
+    it('returns true when available equals the default threshold of 2', function () {
+        $balance = LeaveBalance::factory()->create([
+            'allocated' => 2,
+            'used'      => 0,
+            'pending'   => 0,
+        ]);
+
+        expect($balance->isLow())->toBeTrue();
+    });
+
+    it('returns false when available is above the default threshold', function () {
+        $balance = LeaveBalance::factory()->create([
+            'allocated' => 10,
+            'used'      => 0,
+            'pending'   => 0,
+        ]);
+
+        expect($balance->isLow())->toBeFalse();
+    });
+
+    it('respects a custom threshold', function () {
+        $balance = LeaveBalance::factory()->create([
+            'allocated' => 5,
+            'used'      => 0,
+            'pending'   => 0,
+        ]);
+
+        expect($balance->isLow(5))->toBeTrue();
+        expect($balance->isLow(4))->toBeFalse();
+    });
+
+});
