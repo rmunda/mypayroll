@@ -37,12 +37,38 @@ return new class extends Migration
             $table->decimal('other_deductions', 12, 2)->default(0);
             $table->decimal('total_deductions', 12, 2)->default(0);
             $table->decimal('net_pay', 12, 2)->default(0);
-            $table->enum('status', ['draft','approved','paid','sent'])->default('draft');
+            // Status
+            $table->enum('status', [
+                'draft',
+                'approved',
+                'paid',
+                'sent',
+            ])->default('draft');
+            // PDF
             $table->string('pdf_path')->nullable();
             $table->timestamp('sent_at')->nullable();
+            // Payment fields
+            $table->string('payment_reference')->nullable();
+            $table->enum('payment_mode', [
+                'NEFT',
+                'RTGS',
+                'IMPS',
+                'cheque',
+            ])->nullable();
+            $table->enum('payment_status', [
+                'pending',
+                'processing',
+                'paid',
+                'failed',
+            ])->default('pending');
+            $table->timestamp('paid_at')->nullable();
+            $table->string('payment_failure_reason')->nullable();
+            // Snapshot
             $table->json('deduction_snapshot')->nullable();
+
             $table->timestamps();
-             $table->unique(['payroll_run_id','employee_id']);
+            
+            $table->unique(['payroll_run_id','employee_id']);
         });
     }
 

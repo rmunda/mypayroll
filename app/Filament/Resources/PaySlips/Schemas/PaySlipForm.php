@@ -5,6 +5,7 @@ namespace App\Filament\Resources\PaySlips\Schemas;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class PaySlipForm
@@ -106,6 +107,44 @@ class PaySlipForm
                 TextInput::make('pdf_path'),
                 DateTimePicker::make('sent_at'),
                 TextInput::make('deduction_snapshot'),
+
+                Section::make('Payment')
+                    ->columns(2)
+                    ->schema([
+
+                        TextInput::make('payment_reference')
+                            ->label('Payment Reference')
+                            ->nullable(),
+
+                        Select::make('payment_mode')
+                            ->label('Payment Mode')
+                            ->options([
+                                'NEFT'   => 'NEFT',
+                                'RTGS'   => 'RTGS',
+                                'IMPS'   => 'IMPS',
+                                'cheque' => 'Cheque',
+                            ])
+                            ->nullable(),
+
+                        Select::make('payment_status')
+                            ->label('Payment Status')
+                            ->options([
+                                'pending'    => 'Pending',
+                                'processing' => 'Processing',
+                                'paid'       => 'Paid',
+                                'failed'     => 'Failed',
+                            ])
+                            ->default('pending'),
+
+                        DateTimePicker::make('paid_at')
+                            ->label('Paid At')
+                            ->nullable(),
+
+                        TextInput::make('payment_failure_reason')
+                            ->label('Failure Reason')
+                            ->nullable()
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 }

@@ -4,14 +4,11 @@ namespace App\Filament\Resources\PaySlips\Tables;
 
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 use App\Mail\PaySlipMail;
-
+use App\Models\PaySlip;
 use App\Services\PdfService;
 
 use Filament\Tables\Filters\SelectFilter;
