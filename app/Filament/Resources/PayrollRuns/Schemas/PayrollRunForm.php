@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PayrollRuns\Schemas;
 
+use App\Models\FinancialYear;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -19,6 +20,12 @@ class PayrollRunForm
                 Section::make('Pay period')
                     ->columns(3)
                     ->schema([
+
+                        Select::make('financial_year_id')
+                            ->label('Financial Year')
+                            ->options(FinancialYear::orderByDesc('start_date')->pluck('label', 'id'))
+                            ->required()
+                            ->columnSpanFull(),
 
                         TextInput::make('period_label')
                             ->required()
