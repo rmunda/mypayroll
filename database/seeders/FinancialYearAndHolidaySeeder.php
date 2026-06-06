@@ -49,7 +49,7 @@ class FinancialYearAndHolidaySeeder extends Seeder
         // create FY 2026-27 in advance
         // so HR can start adding next year's holidays
         FinancialYear::firstOrCreate(
-            ['label' => 'FY 2026-27'],
+            ['label' => 'FY 2027-28'],
             [
                 'start_date' => '2027-04-01',
                 'end_date'   => '2028-03-31',
