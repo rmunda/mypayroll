@@ -22,6 +22,11 @@ class EditEmployee extends EditRecord
         ];
     }
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
     protected function afterSave(): void
     {
         $data = $this->form->getRawState();
