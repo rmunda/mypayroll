@@ -13,24 +13,24 @@ class FinancialYearAndHolidaySeeder extends Seeder
     {
         // create FY 2025-26
         $fy = FinancialYear::firstOrCreate(
-            ['label' => 'FY 2025-26'],
+            ['label' => 'FY 2026-27'],
             [
-                'start_date' => '2025-04-01',
-                'end_date'   => '2026-03-31',
+                'start_date' => '2026-04-01',
+                'end_date'   => '2027-03-31',
                 'is_current' => true,
             ]
         );
 
         // seed holidays for FY 2025-26
         $holidays = [
-            ['name' => 'Republic Day',      'date' => '2026-01-26', 'type' => 'national'],
-            ['name' => 'Holi',              'date' => '2026-03-03', 'type' => 'national'],
-            ['name' => 'Good Friday',       'date' => '2026-04-03', 'type' => 'national'],
-            ['name' => 'Independence Day',  'date' => '2025-08-15', 'type' => 'national'],
-            ['name' => 'Gandhi Jayanti',    'date' => '2025-10-02', 'type' => 'national'],
-            ['name' => 'Dussehra',          'date' => '2025-10-02', 'type' => 'national'],
-            ['name' => 'Diwali',            'date' => '2025-10-20', 'type' => 'national'],
-            ['name' => 'Christmas',         'date' => '2025-12-25', 'type' => 'national'],
+            ['name' => 'Republic Day',      'date' => '2027-01-26', 'type' => 'national'],
+            ['name' => 'Holi',              'date' => '2027-03-22', 'type' => 'national'],
+            ['name' => 'Good Friday',       'date' => '2027-03-26', 'type' => 'national'],
+            ['name' => 'Independence Day',  'date' => '2026-08-15', 'type' => 'national'],
+            ['name' => 'Gandhi Jayanti',    'date' => '2026-10-02', 'type' => 'national'],
+            ['name' => 'Dussehra',          'date' => '2026-10-20', 'type' => 'national'],
+            ['name' => 'Diwali',            'date' => '2026-11-08', 'type' => 'national'],
+            ['name' => 'Christmas',         'date' => '2026-12-25', 'type' => 'national'],
         ];
 
         foreach ($holidays as $holiday) {
@@ -51,8 +51,8 @@ class FinancialYearAndHolidaySeeder extends Seeder
         FinancialYear::firstOrCreate(
             ['label' => 'FY 2026-27'],
             [
-                'start_date' => '2026-04-01',
-                'end_date'   => '2027-03-31',
+                'start_date' => '2027-04-01',
+                'end_date'   => '2028-03-31',
                 'is_current' => false,
             ]
         );
