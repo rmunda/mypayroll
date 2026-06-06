@@ -28,6 +28,9 @@ use App\Filament\Widgets\AttendanceCalendarWidget;
 
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
+use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\Auth\RequestPasswordReset;
+use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Pages\Dashboard;
 
 class AdminPanelProvider extends PanelProvider
@@ -39,6 +42,11 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile(EditProfile::class)
+            ->passwordReset(
+                requestAction: RequestPasswordReset::class,
+                resetAction:   ResetPassword::class,
+            )
             ->colors([
                 'primary' => Color::Blue,
             ])
