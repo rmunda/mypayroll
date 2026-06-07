@@ -110,6 +110,11 @@ class AttendanceCalendar extends Page
                         ->body(implode(', ', $parts) . '.')
                         ->success()
                         ->send();
+
+                    // The calendar widget listens for this browser event on `window`
+                    // (FullCalendar JS -> refetchEvents). Same event its own
+                    // refreshRecords() fires after create/edit/delete.
+                    $this->dispatch('filament-fullcalendar--refresh');
                 }),
 
             Action::make('back')
