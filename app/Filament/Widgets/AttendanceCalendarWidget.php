@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Models\WeeklyOffRule;
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -103,10 +104,12 @@ class AttendanceCalendarWidget extends FullCalendarWidget
                         ->searchable()
                         ->preload()
                         ->native(false)
+                        ->live()
                         ->required(),
 
                     DatePicker::make('date')
                         ->required()
+                        ->live()
                         ->unique(
                             table: 'attendance',
                             modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('employee_id', $get('employee_id')),
@@ -125,14 +128,30 @@ class AttendanceCalendarWidget extends FullCalendarWidget
                         }),
 
                     Select::make('status')
-                        ->options([
-                            'present' => 'Present',
-                            'absent' => 'Absent',
-                            'half_day' => 'Half Day',
-                            'on_leave' => 'On Leave',
-                            'holiday' => 'Holiday',
-                            'weekend' => 'Weekend',
-                        ])
+                        ->options(function (Get $get): array {
+                            $options = [
+                                'present'  => 'Present',
+                                'absent'   => 'Absent',
+                                'half_day' => 'Half Day',
+                                'on_leave' => 'On Leave',
+                                'holiday'  => 'Holiday',
+                            ];
+
+                            // Only offer "Weekend" when the chosen date is a non-working
+                            // day under the employee's rule (falling back to the default).
+                            $date = $get('date');
+
+                            if ($date) {
+                                $employee = Employee::with('weeklyOffRule')->find($get('employee_id'));
+                                $rule     = $employee?->weeklyOffRule ?? WeeklyOffRule::default();
+
+                                if ($rule && ! $rule->isWorkingDay(Carbon::parse($date))) {
+                                    $options['weekend'] = 'Weekend';
+                                }
+                            }
+
+                            return $options;
+                        })
                         ->required(),
 
                     TimePicker::make('check_in'),

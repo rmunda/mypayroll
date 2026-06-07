@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use Closure;
 
 use App\Models\Employee;
+use App\Models\WeeklyOffRule;
 
 class AttendanceForm
 {
@@ -22,10 +23,13 @@ class AttendanceForm
             Select::make('employee_id')
                 ->label('Employee')
                 ->options(Employee::where('status','active')->pluck('name','id'))
-                ->searchable()->required(),
+                ->searchable()
+                ->live()
+                ->required(),
             DatePicker::make('date')
                 ->required()
                 ->default(today())
+                ->live()
                 ->unique(
                     table: 'attendance',
                     modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('employee_id', $get('employee_id')),
@@ -43,11 +47,31 @@ class AttendanceForm
                     }
                 }),
             Select::make('status')
-                ->options([
-                    'present'=>'Present','absent'=>'Absent',
-                    'half_day'=>'Half Day','on_leave'=>'On Leave',
-                    'holiday'=>'Holiday','weekend'=>'Weekend',
-                ])->required(),
+                ->options(function (Get $get): array {
+                    $options = [
+                        'present'  => 'Present',
+                        'absent'   => 'Absent',
+                        'half_day' => 'Half Day',
+                        'on_leave' => 'On Leave',
+                        'holiday'  => 'Holiday',
+                    ];
+
+                    // Only offer "Weekend" when the chosen date is a non-working
+                    // day under the employee's rule (falling back to the default).
+                    $date = $get('date');
+
+                    if ($date) {
+                        $employee = Employee::with('weeklyOffRule')->find($get('employee_id'));
+                        $rule     = $employee?->weeklyOffRule ?? WeeklyOffRule::default();
+
+                        if ($rule && ! $rule->isWorkingDay(Carbon::parse($date))) {
+                            $options['weekend'] = 'Weekend';
+                        }
+                    }
+
+                    return $options;
+                })
+                ->required(),
             TimePicker::make('check_in'),
             TimePicker::make('check_out'),
             TextInput::make('remarks'),
