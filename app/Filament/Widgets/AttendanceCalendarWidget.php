@@ -95,11 +95,10 @@ class AttendanceCalendarWidget extends FullCalendarWidget
 
                     Select::make('employee_id')
                         ->label('Employee')
-                        ->options(
-                            Employee::where('status', 'active')
-                                ->pluck('name', 'id')
-                        )
+                        ->relationship(name: 'employee', titleAttribute: 'name', modifyQueryUsing: fn ($query) => $query->where('status', 'active'))
                         ->searchable()
+                        ->preload()
+                        ->native(false)
                         ->required(),
 
                     DatePicker::make('date')
@@ -132,7 +131,10 @@ class AttendanceCalendarWidget extends FullCalendarWidget
             CreateAction::make()
                 ->mountUsing(
                     function (Schema $schema, array $arguments) {
-                        $schema->state([
+                        // fill() properly hydrates every field (incl. the searchable
+                        // employee select). Using state() here skips hydration and
+                        // makes the select submit empty -> "required" error.
+                        $schema->fill([
                             'date' => $arguments['start'] ?? today(),
                         ]);
                     }
