@@ -10,9 +10,13 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TimePicker;
 
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rules\Unique;
+use Illuminate\Support\Carbon;
+use Closure;
 
 
 use Saade\FilamentFullCalendar\Actions\CreateAction;
@@ -102,7 +106,23 @@ class AttendanceCalendarWidget extends FullCalendarWidget
                         ->required(),
 
                     DatePicker::make('date')
-                        ->required(),
+                        ->required()
+                        ->unique(
+                            table: 'attendance',
+                            modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('employee_id', $get('employee_id')),
+                            ignoreRecord: true,
+                        )
+                        ->validationMessages([
+                            'unique' => 'An attendance record already exists for this employee on this date.',
+                        ])
+                        ->rule(fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $employee = Employee::find($get('employee_id'));
+
+                            if ($employee && $value && Carbon::parse($value)->lt($employee->date_of_joining)) {
+                                $fail('Attendance cannot be dated before the joining date ('
+                                    . Carbon::parse($employee->date_of_joining)->format('d M Y') . ').');
+                            }
+                        }),
 
                     Select::make('status')
                         ->options([
