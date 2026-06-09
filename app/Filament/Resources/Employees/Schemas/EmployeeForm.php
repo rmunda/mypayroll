@@ -32,6 +32,15 @@ class EmployeeForm
                             ->required()
                             ->maxLength(255),
 
+                        Select::make('gender')
+                            ->options([
+                                'male'   => 'Male',
+                                'female' => 'Female',
+                                'other'  => 'Other',
+                            ])
+                            ->required()
+                            ->helperText('Determines eligibility for gender-specific leave (e.g. maternity/paternity)'),
+
                         TextInput::make('email')
                             ->email()
                             ->required()

@@ -19,6 +19,7 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->string('employee_code')->unique();
             $table->string('name');
+            $table->enum('gender', ['male','female','other'])->nullable();
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->foreignId('department_id')->constrained()->cascadeOnDelete();

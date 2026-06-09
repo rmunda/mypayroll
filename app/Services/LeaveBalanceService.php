@@ -29,6 +29,11 @@ class LeaveBalanceService
 
         foreach ($employees as $employee) {
             foreach ($leaveTypes as $leaveType) {
+                // skip gender-restricted leave types that don't apply (e.g. maternity for a male)
+                if (! $leaveType->appliesTo($employee->gender)) {
+                    continue;
+                }
+
                 LeaveBalance::firstOrCreate(
                     [
                         'employee_id'       => $employee->id,
@@ -78,6 +83,11 @@ class LeaveBalanceService
 
         foreach ($employees as $employee) {
             foreach ($accruingDetails as $detail) {
+                // skip gender-restricted leave types that don't apply to this employee
+                if (! $detail->leaveType->appliesTo($employee->gender)) {
+                    continue;
+                }
+
                 $balance = LeaveBalance::firstOrCreate(
                     [
                         'employee_id'       => $employee->id,
@@ -190,6 +200,11 @@ class LeaveBalanceService
         $monthsRemaining = now()->diffInMonths($fy->end_date) + 1;
 
         foreach ($leaveTypes as $leaveType) {
+            // skip gender-restricted leave types that don't apply (e.g. paternity for a female)
+            if (! $leaveType->appliesTo($employee->gender)) {
+                continue;
+            }
+
             $detail = LeavePolicyDetail::where('leave_policy_id', $policy->id)
                         ->where('leave_type_id', $leaveType->id)
                         ->first();

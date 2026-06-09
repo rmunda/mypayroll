@@ -19,6 +19,7 @@ class LeaveType extends Model
         'max_days_per_year',
         'max_days_per_request',
         'min_notice_days',
+        'applicable_gender',
         'is_active',
         'description',
     ];
@@ -62,6 +63,18 @@ class LeaveType extends Model
     public function isUnlimited(): bool
     {
         return $this->max_days_per_year == 0;
+    }
+
+    // whether this leave type should be allocated to an employee of the given gender.
+    // 'all' (or a null employee gender against a restricted type) is handled here so
+    // the allocation logic stays a simple appliesTo() check.
+    public function appliesTo(?string $gender): bool
+    {
+        if ($this->applicable_gender === 'all' || $this->applicable_gender === null) {
+            return true;
+        }
+
+        return $this->applicable_gender === $gender;
     }
 
     public function requiresAdvanceNotice(): bool

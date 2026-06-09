@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('max_days_per_year', 5, 1)->default(0);
             $table->decimal('max_days_per_request', 5, 1)->default(0); // max days in one request
             $table->integer('min_notice_days')->default(0);        // advance notice required
+            $table->enum('applicable_gender', ['all','male','female'])->default('all');
             $table->boolean('is_active')->default(true);
             $table->text('description')->nullable();
             $table->timestamps();

@@ -15,7 +15,7 @@ class Employee extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'employee_code','name','email','phone',
+        'employee_code','name','gender','email','phone',
         'department_id','pay_structure_id','weekly_off_rule_id','designation',
         'basic_salary','pay_frequency','bank_name','bank_account',
         'ifsc_code','pan_number','uan_number','esic_number',

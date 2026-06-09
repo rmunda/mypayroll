@@ -80,6 +80,17 @@ class LeaveTypeForm
                         ->default(false)
                         ->helperText('e.g. medical certificate for sick leave'),
 
+                    Select::make('applicable_gender')
+                        ->label('Applies to')
+                        ->options([
+                            'all'    => 'All employees',
+                            'male'   => 'Male only (e.g. paternity)',
+                            'female' => 'Female only (e.g. maternity)',
+                        ])
+                        ->default('all')
+                        ->required()
+                        ->helperText('Restricts who this leave type is allocated to'),
+
                     Toggle::make('is_active')
                         ->label('Active')
                         ->default(true),

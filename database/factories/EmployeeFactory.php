@@ -16,6 +16,7 @@ class EmployeeFactory extends Factory
         return [
             'employee_code'   => 'EMP-' . str_pad(fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
             'name'            => fake()->name(),
+            'gender'          => fake()->randomElement(['male', 'female', 'other']),
             'email'           => fake()->unique()->safeEmail(),
             'phone'           => fake()->phoneNumber(),
             'department_id'   => Department::factory(),
@@ -37,6 +38,16 @@ class EmployeeFactory extends Factory
     public function inactive(): static
     {
         return $this->state(['status' => 'inactive']);
+    }
+
+    public function male(): static
+    {
+        return $this->state(['gender' => 'male']);
+    }
+
+    public function female(): static
+    {
+        return $this->state(['gender' => 'female']);
     }
 
     public function withSalary(float $salary): static
