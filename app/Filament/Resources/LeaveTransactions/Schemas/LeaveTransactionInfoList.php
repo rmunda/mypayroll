@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\LeaveTransactionResource\Schemas;
+namespace App\Filament\Resources\LeaveTransactions\Schemas;
 
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
